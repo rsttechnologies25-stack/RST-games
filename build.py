@@ -24,15 +24,19 @@ def minify_css(content):
     return content.strip()
 
 def minify_js(content):
-    # Simple JS Minifier (Not full obfuscation, but remove comments/space)
-    # Remove single line comments
-    content = re.sub(r'//.*', '', content)
     # Remove multi-line comments
     content = re.sub(r'/\*.*?\*/', '', content, flags=re.DOTALL)
-    # Remove whitespace
-    # This is risky with regex but safe for simple code if we just trim lines
-    lines = [line.strip() for line in content.split('\n') if line.strip()]
-    return '\n'.join(lines) 
+    
+    # Trim lines and remove empty ones to reduce size without breaking logic
+    lines = []
+    for line in content.split('\n'):
+        # We DON'T remove // comments here because they might be part of URLs or strings
+        # and regex-based removal is too risky without a full parser.
+        stripped = line.strip()
+        if stripped:
+            lines.append(stripped)
+    
+    return '\n'.join(lines)
 
     # Note: True obfuscation (renaming vars) is hard with regex. 
     # This basic minification makes it hard to read but safe to run.
