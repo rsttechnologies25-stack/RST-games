@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess - RexonSoftTech</title>
+    <meta name="description" content="Play the classic strategy game of Chess. Challenge a friend or test your skills against our AI.">
+    <meta name="keywords" content="chess, browser chess, online chess, free chess, RexonSoftTech">
+    <link rel="canonical" href="https://rexonsofttech.com/games/chess/index.html">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://rexonsofttech.com/games/chess/">
+    <meta property="og:title" content="Chess - RexonSoftTech">
+    <meta property="og:description" content="Play Chess online for free. Features PvP and PvE (Computer) modes.">
+    <meta property="og:image" content="https://rexonsofttech.com/og-image.png">
+
+    <link rel="manifest" href="../../manifest.json">
+    <meta name="theme-color" content="#8B5CF6">
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="style.css">
+    <!-- PeerJS for Multiplayer -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+
+<body>
+    
+    
+    <header>
+        <div class="container">
+            <nav>
+                <a href="../../index.html" class="logo" aria-label="RexonSoftTech Home">
+                    <h3 style="margin:0; font-size: 1.8rem; color: var(--primary-color);">Rexon<span
+                            style="color: var(--text-color);">SoftTech</span></h3>
+                </a>
+                <div class="nav-actions">
+                    <div class="nav-links">
+                        <a href="../../index.html">Home</a>
+                        <a href="../../games.html">Games</a>
+                        <a href="#" id="showLeaderboard">Leaderboard</a>
+                    </div>
+                    <button class="theme-toggle" title="Toggle Theme" aria-label="Switch between light and dark mode">☀️</button>
+                    <button class="mobile-menu-btn" aria-label="Open mobile menu">☰</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+
+        
+        <div class="breadcrumbs">
+            <a href="../../index.html">Home</a>
+            <span>/</span>
+            <a href="../../games.html">Games</a>
+            <span>/</span>
+            <span>Chess</span>
+        </div>
+
+
+
+
+    <main class="container">
+        <nav aria-label="Breadcrumb" style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">
+            <a href="../../index.html">Home</a> &gt; <a href="../../games.html">Games</a> &gt; <span>Chess</span>
+        </nav>
+
+        <div class="text-center mb-2">
+            <h1>Chess</h1>
+            <p>Master the board in this classic strategy game.</p>
+        </div>
+
+        <div class="game-layout">
+            <div class="game-sidebar">
+                <div class="stats-panel">
+                    <div class="stat-box">
+                        <h4>Turn</h4>
+                        <span id="turn-display">White</span>
+                    </div>
+                    <div class="stat-box">
+                        <h4>Status</h4>
+                        <span id="game-status">Live</span>
+                    </div>
+                </div>
+
+                <div class="mode-selector">
+                    <button class="mode-btn active" data-mode="ai">Vs Computer</button>
+                    <button class="mode-btn" data-mode="pvp">Vs Friend</button>
+                </div>
+
+                <div class="difficulty-options" id="difficulty-selector">
+                    <button class="mode-btn" data-difficulty="easy">Easy</button>
+                    <button class="mode-btn active" data-difficulty="medium">Medium</button>
+                </div>
+
+                <!-- Online Multiplayer Panel -->
+                <div id="multiplayer-panel" class="multiplayer-panel" style="display: none;">
+                    <h4>Your ID: <span id="my-peer-id" class="id-badge">...</span></h4>
+                    <p class="small-text mb-1">Share this ID with a friend to play.</p>
+                    <div class="join-box">
+                        <input type="text" id="join-id-input" placeholder="Enter Friend's ID" class="id-input">
+                        <button class="btn btn-primary btn-sm" id="join-btn">Connect</button>
+                    </div>
+                    <div id="connection-status" class="connection-status">Disconnected</div>
+                </div>
+
+                <div class="move-history-container">
+                    <h4>Move History</h4>
+                    <div id="move-history" class="move-history">
+                        <!-- Moves will be appended here -->
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="restart-btn" style="width: 100%; margin-top: 1rem;">Reset Board</button>
+                <button class="btn btn-whatsapp" id="share-btn" style="width: 100%; margin-top: 0.5rem; display: none;">
+                    <span>Share Result</span>
+                </button>
+            </div>
+
+            <div class="board-container">
+                <div id="chess-board" class="chess-board">
+                    <!-- Board populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <div class="ad-container mt-2">
+            <span>Advertisement</span>
+        </div>
+    </main>
+
+    <div class="game-over-modal" id="gameOverModal">
+        <div class="modal-content">
+            <h2 id="winner-text">Checkmate!</h2>
+            <p id="game-summary">White has won the game.</p>
+            <button class="btn btn-primary" id="playAgainBtn">New Game</button>
+        </div>
+    </div>
+
+    <div class="back-to-top" title="Back to Top">↑</div>
+
+    <script src="../../js/main.js"></script>
+    <script src="script.js"></script>
+
+    
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>RexonSoftTech</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">Your ultimate destination for free, high-quality browser games. Play, compete, and share your high scores!</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="../../index.html">Home</a></li>
+                        <li><a href="../../games.html">All Games</a></li>
+                        <li><a href="#" class="leaderboard-trigger">Leaderboard</a></li>
+                        <li><a href="../../legal/contact.html">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Categories</h4>
+                    <ul>
+                        <li><a href="../../games.html?cat=reflex">Reflex Games</a></li>
+                        <li><a href="../../games.html?cat=brain">Brain Training</a></li>
+                        <li><a href="../../games.html?cat=skill">Skill Based</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="../../legal/privacy.html">Privacy Policy</a></li>
+                        <li><a href="../../legal/terms.html">Terms of Use</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="copyright">&copy; 2026 RexonSoftTech. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="https://wa.me/?text=Check%20out%20these%20awesome%20games%20at%20RexonSoftTech" target="_blank" title="Share on WhatsApp">💬</a>
+                    <a href="#" title="Twitter">🐦</a>
+                    <a href="#" title="Discord">👾</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+</body>
+
+</html>

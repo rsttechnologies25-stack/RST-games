@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Pattern Match - RexonSoftTech</title>
+    <meta name="description" content="Match patterns under time pressure! Test your pattern recognition skills.">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .game-container {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .stats-panel {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: var(--surface-color);
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius);
+            min-width: 100px;
+            flex: 1;
+        }
+
+        .stat-box h4 {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-box span {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .timer-bar-container {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .timer-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, var(--primary-color));
+            transition: width 0.1s linear;
+            border-radius: 10px;
+        }
+
+        .target-pattern {
+            background: var(--surface-color);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .target-pattern h3 {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .pattern-display {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: 0.5rem;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 2rem;
+        }
+
+        .option-card {
+            background: var(--surface-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 0.3rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .option-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 16px rgba(139, 92, 246, 0.4);
+        }
+
+        .option-card:active {
+            transform: scale(0.95);
+        }
+
+        .game-over-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .game-over-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-color);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-content h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .final-stats {
+            margin: 1.5rem 0;
+        }
+
+        .final-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .pattern-display {
+                font-size: 2rem;
+                letter-spacing: 0.3rem;
+            }
+
+            .option-card {
+                font-size: 1.5rem;
+                letter-spacing: 0.2rem;
+                min-height: 100px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+        
+    
+    <header>
+        <div class="container">
+            <nav>
+                <a href="../../index.html" class="logo" aria-label="RexonSoftTech Home">
+                    <h3 style="margin:0; font-size: 1.8rem; color: var(--primary-color);">Rexon<span
+                            style="color: var(--text-color);">SoftTech</span></h3>
+                </a>
+                <div class="nav-actions">
+                    <div class="nav-links">
+                        <a href="../../index.html">Home</a>
+                        <a href="../../games.html">Games</a>
+                        <a href="#" id="showLeaderboard">Leaderboard</a>
+                    </div>
+                    <button class="theme-toggle" title="Toggle Theme" aria-label="Switch between light and dark mode">☀️</button>
+                    <button class="mobile-menu-btn" aria-label="Open mobile menu">☰</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+
+        
+        <div class="breadcrumbs">
+            <a href="../../index.html">Home</a>
+            <span>/</span>
+            <a href="../../games.html">Games</a>
+            <span>/</span>
+            <span>Quick Pattern Match</span>
+        </div>
+
+
+
+
+    <main class="container">
+        <div class="text-center mb-2">
+            <h1>Quick Pattern Match</h1>
+            <p>Match patterns under time pressure!</p>
+        </div>
+
+        <div class="game-container">
+            <div class="stats-panel">
+                <div class="stat-box">
+                    <h4>Level</h4>
+                    <span id="level">1</span>
+                </div>
+                <div class="stat-box">
+                    <h4>Best Level</h4>
+                    <span id="bestLevel">0</span>
+                </div>
+            </div>
+
+            <div class="timer-bar-container">
+                <div class="timer-bar" id="timerBar"></div>
+            </div>
+
+            <div class="target-pattern">
+                <div style="width: 100%;">
+                    <h3>Match This Pattern:</h3>
+                    <div class="pattern-display" id="targetPattern">
+                        <!-- Pattern will be generated -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="options-grid" id="optionsGrid">
+                <!-- Options will be generated by JavaScript -->
+            </div>
+
+            <button class="btn btn-primary" id="restart-btn" style="display:none;">Play Again</button>
+            <br>
+            <button class="btn btn-whatsapp" id="share-btn" style="display:none;">
+                <span>Share Result</span>
+            </button>
+
+            <div class="ad-container mt-2">
+                <span>Advertisement</span>
+            </div>
+        </div>
+    </main>
+
+    <div class="game-over-modal" id="gameOverModal">
+        <div class="modal-content">
+            <h2>Game Over!</h2>
+            <div class="final-stats">
+                <div class="final-stat">
+                    <span>Level Reached:</span>
+                    <strong id="finalLevel">0</strong>
+                </div>
+                <div class="final-stat"
+                    style="border-top: 2px solid var(--primary-color); padding-top: 1rem; margin-top: 1rem;">
+                    <span>Best Level:</span>
+                    <strong id="modalBestLevel" style="color: var(--primary-color);">0</strong>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
+        </div>
+    </div>
+
+    <div class="back-to-top" title="Back to Top">↑</div>
+    <script src="../../js/main.js"></script>
+    <script src="script.js"></script>
+
+    
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>RexonSoftTech</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">Your ultimate destination for free, high-quality browser games. Play, compete, and share your high scores!</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="../../index.html">Home</a></li>
+                        <li><a href="../../games.html">All Games</a></li>
+                        <li><a href="#" class="leaderboard-trigger">Leaderboard</a></li>
+                        <li><a href="../../legal/contact.html">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Categories</h4>
+                    <ul>
+                        <li><a href="../../games.html?cat=reflex">Reflex Games</a></li>
+                        <li><a href="../../games.html?cat=brain">Brain Training</a></li>
+                        <li><a href="../../games.html?cat=skill">Skill Based</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="../../legal/privacy.html">Privacy Policy</a></li>
+                        <li><a href="../../legal/terms.html">Terms of Use</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="copyright">&copy; 2026 RexonSoftTech. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="https://wa.me/?text=Check%20out%20these%20awesome%20games%20at%20RexonSoftTech" target="_blank" title="Share on WhatsApp">💬</a>
+                    <a href="#" title="Twitter">🐦</a>
+                    <a href="#" title="Discord">👾</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+</body>
+
+</html>

@@ -1,0 +1,17 @@
+# Build artifacts
+dist/
+__pycache__/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment/Secret files
+.env
+*.local
+
+# System/IDE files
+.gemini/
+.agent/
+.vscode/
+.idea/

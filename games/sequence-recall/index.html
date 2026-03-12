@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sequence Recall - RexonSoftTech</title>
+    <meta name="description" content="Follow the color sequence. Memorize the pattern and repeat it correctly.">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .game-container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .simon-board {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+
+        .simon-btn {
+            border-radius: 20px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.1s;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .simon-btn:active,
+        .simon-btn.active {
+            opacity: 1;
+            transform: scale(0.95);
+            box-shadow: 0 0 30px currentColor;
+        }
+
+        #btn-green {
+            background: #10B981;
+            color: #10B981;
+        }
+
+        #btn-red {
+            background: #EF4444;
+            color: #EF4444;
+        }
+
+        #btn-yellow {
+            background: #F59E0B;
+            color: #F59E0B;
+        }
+
+        #btn-blue {
+            background: #3B82F6;
+            color: #3B82F6;
+        }
+
+        #center-control {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-color);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 5px solid var(--surface-color);
+            flex-direction: column;
+        }
+
+        #center-control h3 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        #center-control span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .status-text {
+            min-height: 2rem;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+        }
+    </style>
+</head>
+
+<body>
+
+        
+    
+    <header>
+        <div class="container">
+            <nav>
+                <a href="../../index.html" class="logo" aria-label="RexonSoftTech Home">
+                    <h3 style="margin:0; font-size: 1.8rem; color: var(--primary-color);">Rexon<span
+                            style="color: var(--text-color);">SoftTech</span></h3>
+                </a>
+                <div class="nav-actions">
+                    <div class="nav-links">
+                        <a href="../../index.html">Home</a>
+                        <a href="../../games.html">Games</a>
+                        <a href="#" id="showLeaderboard">Leaderboard</a>
+                    </div>
+                    <button class="theme-toggle" title="Toggle Theme" aria-label="Switch between light and dark mode">☀️</button>
+                    <button class="mobile-menu-btn" aria-label="Open mobile menu">☰</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+
+        
+        <div class="breadcrumbs">
+            <a href="../../index.html">Home</a>
+            <span>/</span>
+            <a href="../../games.html">Games</a>
+            <span>/</span>
+            <span>Sequence Recall</span>
+        </div>
+
+
+
+
+    <main class="container">
+        <div class="text-center mb-2">
+            <h1>Sequence Recall</h1>
+            <p>Watch the pattern. Repeat the sequence.</p>
+        </div>
+
+        <div class="game-container">
+            <div class="status-text" id="status">Press Start to Play</div>
+
+            <div class="simon-board">
+                <div class="simon-btn" id="btn-green" data-color="green"></div>
+                <div class="simon-btn" id="btn-red" data-color="red"></div>
+                <div class="simon-btn" id="btn-yellow" data-color="yellow"></div>
+                <div class="simon-btn" id="btn-blue" data-color="blue"></div>
+
+                <div id="center-control">
+                    <h3 id="level-indicator">0</h3>
+                    <span>Steps</span>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" id="start-btn">Start Game</button>
+
+            <div class="leaderboard-container">
+                <h3>Best Streaks</h3>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Score</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <!-- Scores injected here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="ad-container mt-2">
+                <span>Advertisement</span>
+            </div>
+        </div>
+    </main>
+
+    <div id="result-modal">
+        <div class="modal-content">
+            <h2 class="mb-2">Wrong Sequence!</h2>
+            <p style="font-size: 1.5rem;">Score: <span id="final-score"
+                    style="color: var(--primary-color); font-weight: bold;">0</span></p>
+
+            <p id="new-record-msg" style="color: var(--success-color); display: none; margin-bottom: 1rem;">🏆 New High
+                Score! 🏆</p>
+
+            <button class="btn btn-primary" onclick="restartGame()">Try Again</button>
+            <br>
+            <button class="btn btn-whatsapp" id="share-btn">
+                <span>Share on WhatsApp</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="back-to-top" title="Back to Top">↑</div>
+    <script src="../../js/main.js"></script>
+    <script src="script.js"></script>
+
+    
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>RexonSoftTech</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">Your ultimate destination for free, high-quality browser games. Play, compete, and share your high scores!</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="../../index.html">Home</a></li>
+                        <li><a href="../../games.html">All Games</a></li>
+                        <li><a href="#" class="leaderboard-trigger">Leaderboard</a></li>
+                        <li><a href="../../legal/contact.html">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Categories</h4>
+                    <ul>
+                        <li><a href="../../games.html?cat=reflex">Reflex Games</a></li>
+                        <li><a href="../../games.html?cat=brain">Brain Training</a></li>
+                        <li><a href="../../games.html?cat=skill">Skill Based</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="../../legal/privacy.html">Privacy Policy</a></li>
+                        <li><a href="../../legal/terms.html">Terms of Use</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="copyright">&copy; 2026 RexonSoftTech. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="https://wa.me/?text=Check%20out%20these%20awesome%20games%20at%20RexonSoftTech" target="_blank" title="Share on WhatsApp">💬</a>
+                    <a href="#" title="Twitter">🐦</a>
+                    <a href="#" title="Discord">👾</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+</body>
+
+</html>

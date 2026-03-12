@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Don't Tap the Red - RexonSoftTech</title>
+    <meta name="description" content="Test your reflexes! Tap safe tiles but avoid the red one at all costs!">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .game-container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .score-panel {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+
+        .score-box {
+            background: var(--surface-color);
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius);
+            flex: 1;
+        }
+
+        .score-box h4 {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .score-box span {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 500px;
+            margin: 0 auto 2rem;
+            padding: 1rem;
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+        }
+
+        .tile {
+            aspect-ratio: 1;
+            background: var(--primary-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .tile:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .tile:active {
+            transform: scale(0.95);
+        }
+
+        .tile.red {
+            background: #ef4444;
+            box-shadow: 0 4px 6px rgba(239, 68, 68, 0.5);
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            10%,
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: translateX(-10px);
+            }
+
+            20%,
+            40%,
+            60%,
+            80% {
+                transform: translateX(10px);
+            }
+        }
+
+        .game-over-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .game-over-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-color);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-content h2 {
+            color: #ef4444;
+            margin-bottom: 1rem;
+        }
+
+        .final-stats {
+            margin: 1.5rem 0;
+        }
+
+        .final-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .grid-container {
+                gap: 8px;
+                padding: 0.5rem;
+            }
+
+            .tile {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+        
+    
+    <header>
+        <div class="container">
+            <nav>
+                <a href="../../index.html" class="logo" aria-label="RexonSoftTech Home">
+                    <h3 style="margin:0; font-size: 1.8rem; color: var(--primary-color);">Rexon<span
+                            style="color: var(--text-color);">SoftTech</span></h3>
+                </a>
+                <div class="nav-actions">
+                    <div class="nav-links">
+                        <a href="../../index.html">Home</a>
+                        <a href="../../games.html">Games</a>
+                        <a href="#" id="showLeaderboard">Leaderboard</a>
+                    </div>
+                    <button class="theme-toggle" title="Toggle Theme" aria-label="Switch between light and dark mode">☀️</button>
+                    <button class="mobile-menu-btn" aria-label="Open mobile menu">☰</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+
+        
+        <div class="breadcrumbs">
+            <a href="../../index.html">Home</a>
+            <span>/</span>
+            <a href="../../games.html">Games</a>
+            <span>/</span>
+            <span>Don't Tap the Red</span>
+        </div>
+
+
+
+
+    <main class="container">
+        <div class="text-center mb-2">
+            <h1>Don't Tap the Red</h1>
+            <p>Avoid the red tile at all costs!</p>
+        </div>
+
+        <div class="game-container">
+            <div class="score-panel">
+                <div class="score-box">
+                    <h4>Score</h4>
+                    <span id="score">0</span>
+                </div>
+                <div class="score-box">
+                    <h4>Best Score</h4>
+                    <span id="bestScore">0</span>
+                </div>
+            </div>
+
+            <div class="grid-container" id="gridContainer">
+                <!-- Tiles will be generated by JavaScript -->
+            </div>
+
+            <button class="btn btn-primary" id="restart-btn" style="display:none;">Play Again</button>
+            <br>
+            <button class="btn btn-whatsapp" id="share-btn" style="display:none;">
+                <span>Share Result</span>
+            </button>
+
+            <div class="ad-container mt-2">
+                <span>Advertisement</span>
+            </div>
+        </div>
+    </main>
+
+    <div class="game-over-modal" id="gameOverModal">
+        <div class="modal-content">
+            <h2>💥 You Tapped the Red!</h2>
+            <div class="final-stats">
+                <div class="final-stat">
+                    <span>Final Score:</span>
+                    <strong id="finalScore">0</strong>
+                </div>
+                <div class="final-stat"
+                    style="border-top: 2px solid var(--primary-color); padding-top: 1rem; margin-top: 1rem;">
+                    <span>Best Score:</span>
+                    <strong id="modalBestScore" style="color: var(--primary-color);">0</strong>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
+        </div>
+    </div>
+
+    <div class="back-to-top" title="Back to Top">↑</div>
+    <script src="../../js/main.js"></script>
+    <script src="script.js"></script>
+
+    
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>RexonSoftTech</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">Your ultimate destination for free, high-quality browser games. Play, compete, and share your high scores!</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="../../index.html">Home</a></li>
+                        <li><a href="../../games.html">All Games</a></li>
+                        <li><a href="#" class="leaderboard-trigger">Leaderboard</a></li>
+                        <li><a href="../../legal/contact.html">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Categories</h4>
+                    <ul>
+                        <li><a href="../../games.html?cat=reflex">Reflex Games</a></li>
+                        <li><a href="../../games.html?cat=brain">Brain Training</a></li>
+                        <li><a href="../../games.html?cat=skill">Skill Based</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="../../legal/privacy.html">Privacy Policy</a></li>
+                        <li><a href="../../legal/terms.html">Terms of Use</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="copyright">&copy; 2026 RexonSoftTech. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="https://wa.me/?text=Check%20out%20these%20awesome%20games%20at%20RexonSoftTech" target="_blank" title="Share on WhatsApp">💬</a>
+                    <a href="#" title="Twitter">🐦</a>
+                    <a href="#" title="Discord">👾</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+</body>
+
+</html>

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 Neon - RexonSoftTech</title>
+    <meta name="description"
+        content="Join the numbers and get to the 2048 tile! A custom neon version of the classic game.">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .game-container {
+            max-width: 500px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 2rem 0;
+            touch-action: none;
+            /* Prevent scroll on mobile swipe */
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .score-box {
+            background: var(--surface-color);
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .score-box small {
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        .score-box div {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .grid-container {
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            width: 100%;
+            aspect-ratio: 1;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            margin-bottom: 2rem;
+        }
+
+        .grid-bg {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .grid-cell {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .tile-container {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            bottom: 15px;
+        }
+
+        .tile {
+            position: absolute;
+            width: calc(25% - 11.25px);
+            /* (100% - 3*15px) / 4 ?? close approximation needed */
+            /* Better calculation: let JS handle pos or use calc carefully. 
+               15px gap. 4 cols. total gap = 45px.
+               width = (100% - 45px) / 4
+            */
+            width: calc((100% - 45px) / 4);
+            height: calc((100% - 45px) / 4);
+            background: var(--bg-color);
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+            transition: transform 0.1s, left 0.1s, top 0.1s;
+            z-index: 10;
+        }
+
+        /* Tile Colors (Neon Theme) */
+        .tile-2 {
+            background: #eee4da;
+            color: #776e65;
+            box-shadow: 0 0 10px rgba(238, 228, 218, 0.5);
+        }
+
+        .tile-4 {
+            background: #ede0c8;
+            color: #776e65;
+            box-shadow: 0 0 10px rgba(237, 224, 200, 0.5);
+        }
+
+        .tile-8 {
+            background: #f2b179;
+            color: white;
+            box-shadow: 0 0 15px #f2b179;
+        }
+
+        .tile-16 {
+            background: #f59563;
+            color: white;
+            box-shadow: 0 0 15px #f59563;
+        }
+
+        .tile-32 {
+            background: #f67c5f;
+            color: white;
+            box-shadow: 0 0 20px #f67c5f;
+        }
+
+        .tile-64 {
+            background: #f65e3b;
+            color: white;
+            box-shadow: 0 0 20px #f65e3b;
+        }
+
+        .tile-128 {
+            background: #edcf72;
+            color: white;
+            box-shadow: 0 0 25px #edcf72;
+            text-shadow: 0 0 5px white;
+        }
+
+        .tile-256 {
+            background: #edcc61;
+            color: white;
+            box-shadow: 0 0 25px #edcc61;
+            text-shadow: 0 0 5px white;
+        }
+
+        .tile-512 {
+            background: #edc850;
+            color: white;
+            box-shadow: 0 0 30px #edc850;
+            text-shadow: 0 0 5px white;
+        }
+
+        .tile-1024 {
+            background: #edc53f;
+            color: white;
+            box-shadow: 0 0 30px #edc53f;
+            text-shadow: 0 0 5px white;
+            font-size: 1.5rem;
+        }
+
+        .tile-2048 {
+            background: #edc22e;
+            color: white;
+            box-shadow: 0 0 40px #edc22e;
+            text-shadow: 0 0 10px white;
+            font-size: 1.5rem;
+        }
+
+        /* Custom Purple/Gold Override for RexonSoftTech Theme */
+        .tile-2 {
+            background: #2D1B4E;
+            color: #E0E0E0;
+            box-shadow: 0 0 5px #8B5CF6;
+        }
+
+        .tile-4 {
+            background: #432475;
+            color: #E0E0E0;
+            box-shadow: 0 0 8px #8B5CF6;
+        }
+
+        .tile-8 {
+            background: #5B2C9D;
+            color: white;
+            box-shadow: 0 0 10px #8B5CF6;
+        }
+
+        .tile-16 {
+            background: #7C3AED;
+            color: white;
+            box-shadow: 0 0 15px #7C3AED;
+        }
+
+        .tile-32 {
+            background: #8B5CF6;
+            color: white;
+            box-shadow: 0 0 20px #8B5CF6;
+        }
+
+        /* Primary */
+        .tile-64 {
+            background: #A78BFA;
+            color: white;
+            box-shadow: 0 0 25px #A78BFA;
+        }
+
+        .tile-128 {
+            background: #FDE047;
+            color: black;
+            box-shadow: 0 0 30px #FDE047;
+        }
+
+        /* Gold starts */
+        .tile-256 {
+            background: #FACC15;
+            color: black;
+            box-shadow: 0 0 35px #FACC15;
+        }
+
+        .tile-512 {
+            background: #EAB308;
+            color: black;
+            box-shadow: 0 0 40px #EAB308;
+        }
+
+        .tile-1024 {
+            background: #CA8A04;
+            color: white;
+            box-shadow: 0 0 45px #CA8A04;
+        }
+
+        .tile-2048 {
+            background: #06B6D4;
+            color: white;
+            box-shadow: 0 0 50px #06B6D4;
+            text-shadow: 0 0 10px white;
+        }
+
+        /* Cyan Ultimate */
+
+        .tile-new {
+            animation: pop 0.2s ease-in;
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(0);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+        
+    
+    <header>
+        <div class="container">
+            <nav>
+                <a href="../../index.html" class="logo" aria-label="RexonSoftTech Home">
+                    <h3 style="margin:0; font-size: 1.8rem; color: var(--primary-color);">Rexon<span
+                            style="color: var(--text-color);">SoftTech</span></h3>
+                </a>
+                <div class="nav-actions">
+                    <div class="nav-links">
+                        <a href="../../index.html">Home</a>
+                        <a href="../../games.html">Games</a>
+                        <a href="#" id="showLeaderboard">Leaderboard</a>
+                    </div>
+                    <button class="theme-toggle" title="Toggle Theme" aria-label="Switch between light and dark mode">☀️</button>
+                    <button class="mobile-menu-btn" aria-label="Open mobile menu">☰</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+
+        
+        <div class="breadcrumbs">
+            <a href="../../index.html">Home</a>
+            <span>/</span>
+            <a href="../../games.html">Games</a>
+            <span>/</span>
+            <span>Game</span>
+        </div>
+
+
+
+
+    <main class="container">
+        <div class="game-container">
+            <div class="header-row">
+                <div>
+                    <h1 style="font-size: 2.5rem; margin: 0;">2048</h1>
+                    <p style="margin:0;">Neon Edition</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" id="restart-btn" style="padding: 0.5rem 1rem;">New Game</button>
+                    <div class="score-box">
+                        <small>Score</small>
+                        <div id="score">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-container">
+                <div class="grid-bg">
+                    <!-- 16 cells -->
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                </div>
+                <div class="tile-container" id="tile-container">
+                    <!-- Tiles injected here -->
+                </div>
+            </div>
+
+            <p>Use <strong>Arrow Keys</strong> or <strong>Swipe</strong> to join numbers.</p>
+
+            <div class="leaderboard-container">
+                <h3>High Scores</h3>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Score</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <!-- Scores injected here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="text-align: center; margin-top: 1rem;">
+                <button class="btn btn-whatsapp" id="share-btn">
+                    <span>Share Score</span>
+                </button>
+            </div>
+
+            <div class="ad-container mt-2">
+                <span>Advertisement</span>
+            </div>
+        </div>
+    </main>
+
+    <div id="result-modal">
+        <div class="modal-content">
+            <h2 class="mb-2">Game Over!</h2>
+            <p style="font-size: 1.5rem;">Score: <span id="final-score"
+                    style="color: var(--primary-color); font-weight: bold;">0</span></p>
+            <p id="new-record-msg" style="color: var(--success-color); display: none; margin-bottom: 1rem;">🏆 New High
+                Score! 🏆</p>
+            <button class="btn btn-primary" onclick="restartGame()">Try Again</button>
+        </div>
+    </div>
+
+    <div class="back-to-top" title="Back to Top">↑</div>
+    <script src="../../js/main.js"></script>
+    <script src="script.js"></script>
+
+    
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>RexonSoftTech</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">Your ultimate destination for free, high-quality browser games. Play, compete, and share your high scores!</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="../../index.html">Home</a></li>
+                        <li><a href="../../games.html">All Games</a></li>
+                        <li><a href="#" class="leaderboard-trigger">Leaderboard</a></li>
+                        <li><a href="../../legal/contact.html">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Categories</h4>
+                    <ul>
+                        <li><a href="../../games.html?cat=reflex">Reflex Games</a></li>
+                        <li><a href="../../games.html?cat=brain">Brain Training</a></li>
+                        <li><a href="../../games.html?cat=skill">Skill Based</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="../../legal/privacy.html">Privacy Policy</a></li>
+                        <li><a href="../../legal/terms.html">Terms of Use</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="copyright">&copy; 2026 RexonSoftTech. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="https://wa.me/?text=Check%20out%20these%20awesome%20games%20at%20RexonSoftTech" target="_blank" title="Share on WhatsApp">💬</a>
+                    <a href="#" title="Twitter">🐦</a>
+                    <a href="#" title="Discord">👾</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+</body>
+
+</html>

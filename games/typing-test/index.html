@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Speed Test - RexonSoftTech</title>
+    <meta name="description" content="Test your typing speed. How many Words Per Minute (WPM) can you type?">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .game-container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            background: var(--surface-color);
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .text-display {
+            background: rgba(11, 15, 25, 0.5);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            font-size: 1.5rem;
+            line-height: 1.8;
+            text-align: left;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            user-select: none;
+            min-height: 150px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .text-display span {
+            position: relative;
+        }
+
+        .text-display span.correct {
+            color: var(--success-color);
+        }
+
+        .text-display span.incorrect {
+            color: var(--error-color);
+            text-decoration: underline;
+        }
+
+        .text-display span.current {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .text-display span.current::after {
+            content: '|';
+            position: absolute;
+            left: -2px;
+            color: var(--primary-color);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+
+        #input-field {
+            opacity: 0;
+            position: absolute;
+            z-index: -1;
+        }
+
+        .restart-hint {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        #result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: var(--surface-color);
+            padding: 3rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            border: 1px solid var(--primary-color);
+            box-shadow: 0 0 30px var(--primary-glow);
+            max-width: 90%;
+            width: 500px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-item h5 {
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-item .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+        .settings-bar {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .setting-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .setting-group label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .select-input {
+            background: var(--surface-color);
+            color: var(--text-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .select-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+    </style>
+</head>
+
+<body>
+
+        
+    
+    <header>
+        <div class="container">
+            <nav>
+                <a href="../../index.html" class="logo" aria-label="RexonSoftTech Home">
+                    <h3 style="margin:0; font-size: 1.8rem; color: var(--primary-color);">Rexon<span
+                            style="color: var(--text-color);">SoftTech</span></h3>
+                </a>
+                <div class="nav-actions">
+                    <div class="nav-links">
+                        <a href="../../index.html">Home</a>
+                        <a href="../../games.html">Games</a>
+                        <a href="#" id="showLeaderboard">Leaderboard</a>
+                    </div>
+                    <button class="theme-toggle" title="Toggle Theme" aria-label="Switch between light and dark mode">☀️</button>
+                    <button class="mobile-menu-btn" aria-label="Open mobile menu">☰</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+
+        
+        <div class="breadcrumbs">
+            <a href="../../index.html">Home</a>
+            <span>/</span>
+            <a href="../../games.html">Games</a>
+            <span>/</span>
+            <span>Typing Speed Test</span>
+        </div>
+
+
+
+
+    <main class="container">
+        <div class="text-center mb-2">
+            <h1>Typing Speed Test</h1>
+            <p>Type the text below as fast as you can. Timer starts when you type.</p>
+        </div>
+
+        <div class="game-container">
+            <div class="settings-bar">
+                <div class="setting-group">
+                    <label>Level:</label>
+                    <select id="level-select" class="select-input">
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Duration:</label>
+                    <select id="duration-select" class="select-input">
+                        <option value="0">No Time</option>
+                        <option value="15">15s</option>
+                        <option value="30" selected>30s</option>
+                        <option value="60">60s</option>
+                        <option value="120">120s</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat-box">
+                    <h4>Time</h4>
+                    <span id="timer">30</span>s
+                </div>
+                <div class="stat-box">
+                    <h4>WPM</h4>
+                    <span id="wpm">0</span>
+                </div>
+                <div class="stat-box">
+                    <h4>Accuracy</h4>
+                    <span id="accuracy">100</span>%
+                </div>
+            </div>
+
+            <div class="text-display" id="text-display" onclick="document.getElementById('input-field').focus()">
+                <!-- Text will be injected here -->
+            </div>
+            <input type="text" id="input-field" autocomplete="off">
+
+            <p class="restart-hint">Click the text box or press any key to focus. TAB to restart.</p>
+
+            <div class="leaderboard-container">
+                <h3>Top Scores (WPM)</h3>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>WPM</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <!-- Scores injected here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="ad-container mt-2">
+                <span>Advertisement</span>
+            </div>
+        </div>
+    </main>
+
+    <div id="result-modal">
+        <div class="modal-content">
+            <h2 class="mb-2">Test Complete!</h2>
+
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <h5>WPM</h5>
+                    <div class="value" id="final-wpm" style="color: var(--primary-color)">0</div>
+                </div>
+                <div class="stat-item">
+                    <h5>Accuracy</h5>
+                    <div class="value" id="final-accuracy" style="color: var(--secondary-color)">100%</div>
+                </div>
+                <div class="stat-item">
+                    <h5>Raw CPM</h5>
+                    <div class="value" id="final-cpm">0</div>
+                </div>
+                <div class="stat-item">
+                    <h5>Errors</h5>
+                    <div class="value" id="final-errors" style="color: var(--error-color)">0</div>
+                </div>
+            </div>
+
+            <p id="new-record-msg" style="color: var(--success-color); display: none; margin-bottom: 1rem;">🏆 New
+                Personal Best WPM! 🏆</p>
+
+            <button class="btn btn-primary" id="restart-btn">Try Again</button>
+            <br>
+            <button class="btn btn-whatsapp" id="share-btn">
+                <span>Share on WhatsApp</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="back-to-top" title="Back to Top">↑</div>
+    <script src="../../js/main.js"></script>
+    <script src="script.js"></script>
+
+    
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>RexonSoftTech</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">Your ultimate destination for free, high-quality browser games. Play, compete, and share your high scores!</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="../../index.html">Home</a></li>
+                        <li><a href="../../games.html">All Games</a></li>
+                        <li><a href="#" class="leaderboard-trigger">Leaderboard</a></li>
+                        <li><a href="../../legal/contact.html">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Categories</h4>
+                    <ul>
+                        <li><a href="../../games.html?cat=reflex">Reflex Games</a></li>
+                        <li><a href="../../games.html?cat=brain">Brain Training</a></li>
+                        <li><a href="../../games.html?cat=skill">Skill Based</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="../../legal/privacy.html">Privacy Policy</a></li>
+                        <li><a href="../../legal/terms.html">Terms of Use</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="copyright">&copy; 2026 RexonSoftTech. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="https://wa.me/?text=Check%20out%20these%20awesome%20games%20at%20RexonSoftTech" target="_blank" title="Share on WhatsApp">💬</a>
+                    <a href="#" title="Twitter">🐦</a>
+                    <a href="#" title="Discord">👾</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+</body>
+
+</html>

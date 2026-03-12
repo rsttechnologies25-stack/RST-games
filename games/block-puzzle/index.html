@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Puzzle - RexonSoftTech</title>
+    <meta name="description" content="Fit the blocks into the grid. Clear lines to score points. No time limit.">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .game-wrapper {
+            max-width: 500px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 1rem 0;
+            touch-action: none;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            background: var(--surface-color);
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .score-item h4 {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .score-item span {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        #grid-container {
+            width: 100%;
+            aspect-ratio: 1;
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            padding: 10px;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            gap: 4px;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .cell {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .cell.filled {
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+            transition: background 0.2s;
+        }
+
+        /* Drag Area */
+        #shape-area {
+            display: flex;
+            justify-content: space-between;
+            height: 120px;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .shape-container {
+            width: 30%;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Shape Visuals */
+        .shape {
+            display: grid;
+            gap: 2px;
+            cursor: pointer;
+            touch-action: none;
+        }
+
+        .shape-block {
+            width: 25px;
+            height: 25px;
+            border-radius: 4px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Dragging State */
+        .shape.dragging {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.9;
+            transform: scale(1.2);
+            /* Slightly larger when dragging */
+        }
+
+        /* Colors */
+        .color-1 {
+            background: #8B5CF6;
+        }
+
+        /* Purple */
+        .color-2 {
+            background: #06B6D4;
+        }
+
+        /* Cyan */
+        .color-3 {
+            background: #10B981;
+        }
+
+        /* Green */
+        .color-4 {
+            background: #F59E0B;
+        }
+
+        /* Orange */
+        .color-5 {
+            background: #EF4444;
+        }
+
+        /* Red */
+        .color-6 {
+            background: #EC4899;
+        }
+
+        /* Pink */
+
+        /* Flash animation for clearing */
+        @keyframes flash {
+            0% {
+                background: white;
+            }
+
+            100% {
+                background: transparent;
+            }
+        }
+
+        .cleared {
+            animation: flash 0.3s ease-out;
+        }
+    </style>
+</head>
+
+<body>
+
+        
+    
+    <header>
+        <div class="container">
+            <nav>
+                <a href="../../index.html" class="logo" aria-label="RexonSoftTech Home">
+                    <h3 style="margin:0; font-size: 1.8rem; color: var(--primary-color);">Rexon<span
+                            style="color: var(--text-color);">SoftTech</span></h3>
+                </a>
+                <div class="nav-actions">
+                    <div class="nav-links">
+                        <a href="../../index.html">Home</a>
+                        <a href="../../games.html">Games</a>
+                        <a href="#" id="showLeaderboard">Leaderboard</a>
+                    </div>
+                    <button class="theme-toggle" title="Toggle Theme" aria-label="Switch between light and dark mode">☀️</button>
+                    <button class="mobile-menu-btn" aria-label="Open mobile menu">☰</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+
+        
+        <div class="breadcrumbs">
+            <a href="../../index.html">Home</a>
+            <span>/</span>
+            <a href="../../games.html">Games</a>
+            <span>/</span>
+            <span>Game</span>
+        </div>
+
+
+
+
+    <main class="container">
+        <div class="game-wrapper">
+            <h1 class="mb-2">Block Puzzle</h1>
+
+            <div class="score-board">
+                <div class="score-item">
+                    <h4>Score</h4>
+                    <div id="score">0</div>
+                </div>
+                <div class="score-item">
+                    <h4>Best</h4>
+                    <div id="best-score">0</div>
+                </div>
+            </div>
+
+            <div id="grid-container">
+                <!-- 64 Cells -->
+            </div>
+
+            <div id="shape-area">
+                <div class="shape-container" id="shape-1"></div>
+                <div class="shape-container" id="shape-2"></div>
+                <div class="shape-container" id="shape-3"></div>
+            </div>
+
+            <button class="btn btn-primary" id="restart-btn" style="display:none;">Restart Game</button>
+
+            <div class="leaderboard-container mt-2">
+                <h3>Top Scores</h3>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Score</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <!-- Scores injected here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="ad-container mt-2">
+                <span>Advertisement</span>
+            </div>
+        </div>
+    </main>
+
+    <div id="result-modal">
+        <div class="modal-content">
+            <h2 class="mb-2">No Moves Left!</h2>
+            <p style="font-size: 1.5rem;">Score: <span id="final-score"
+                    style="color: var(--primary-color); font-weight: bold;">0</span></p>
+            <p id="new-record-msg" style="color: var(--success-color); display: none; margin-bottom: 1rem;">🏆 New Best!
+                🏆</p>
+            <button class="btn btn-primary" onclick="restartGame()">Try Again</button>
+            <br>
+            <button class="btn btn-whatsapp" id="share-btn">
+                <span>Share Score</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="back-to-top" title="Back to Top">↑</div>
+    <script src="../../js/main.js"></script>
+    <script src="script.js"></script>
+
+    
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>RexonSoftTech</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">Your ultimate destination for free, high-quality browser games. Play, compete, and share your high scores!</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="../../index.html">Home</a></li>
+                        <li><a href="../../games.html">All Games</a></li>
+                        <li><a href="#" class="leaderboard-trigger">Leaderboard</a></li>
+                        <li><a href="../../legal/contact.html">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Categories</h4>
+                    <ul>
+                        <li><a href="../../games.html?cat=reflex">Reflex Games</a></li>
+                        <li><a href="../../games.html?cat=brain">Brain Training</a></li>
+                        <li><a href="../../games.html?cat=skill">Skill Based</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="../../legal/privacy.html">Privacy Policy</a></li>
+                        <li><a href="../../legal/terms.html">Terms of Use</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="copyright">&copy; 2026 RexonSoftTech. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="https://wa.me/?text=Check%20out%20these%20awesome%20games%20at%20RexonSoftTech" target="_blank" title="Share on WhatsApp">💬</a>
+                    <a href="#" title="Twitter">🐦</a>
+                    <a href="#" title="Discord">👾</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+</body>
+
+</html>
