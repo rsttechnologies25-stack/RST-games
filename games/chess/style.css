@@ -379,30 +379,65 @@
     padding: 0.4rem 0.8rem;
     font-size: 0.8rem;
 }
-/* Fullscreen Styles */
-.board-container:fullscreen {
+/* Fullscreen Styles - Whole Game Layout */
+.game-layout:fullscreen {
     background: #0f172a !important;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 1rem;
+    gap: 3rem;
+    padding: 2rem;
+    overflow: hidden;
 }
 
-.board-container::backdrop {
+.game-layout::backdrop {
     background: #0f172a;
 }
 
-.board-container:fullscreen .chess-board {
-    width: 85vh;
-    height: 85vh;
-    max-width: 95vw;
-    max-height: 95vw;
+.game-layout:fullscreen .game-sidebar {
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    min-width: 320px;
+    max-width: 400px;
+    padding: 2rem;
 }
 
-.board-container:fullscreen .player-info {
+.game-layout:fullscreen .chess-board {
+    width: min(85vh, 60vw);
+    height: min(85vh, 60vw);
+    max-width: 700px;
+    max-height: 700px;
+}
+
+.game-layout:fullscreen .board-container {
+    flex: none;
+}
+
+.game-layout:fullscreen .player-info {
     width: 100%;
-    max-width: 85vh;
+    max-width: min(85vh, 60vw);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Adjustments for smaller heights in fullscreen */
+@media (max-height: 800px) {
+    .game-layout:fullscreen {
+        gap: 1.5rem;
+        padding: 1rem;
+    }
+    .game-layout:fullscreen .game-sidebar {
+        padding: 1rem;
+        font-size: 0.8rem;
+    }
+    .game-layout:fullscreen .stat-box {
+        padding: 0.5rem;
+    }
 }
 
 #fullscreen-btn.active {

@@ -754,13 +754,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const fullscreenBtn = document.getElementById('fullscreen-btn');
-        const boardContainer = document.querySelector('.board-container');
+        const gameLayout = document.querySelector('.game-layout');
 
-        if (fullscreenBtn && boardContainer) {
+        if (fullscreenBtn && gameLayout) {
             fullscreenBtn.onclick = () => {
                 try {
                     if (!document.fullscreenElement) {
-                        boardContainer.requestFullscreen().catch(err => {
+                        gameLayout.requestFullscreen().catch(err => {
                             console.error(`Fullscreen failed: ${err.message}`);
                             alert("Fullscreen Mode not supported or blocked by browser.");
                         });
@@ -776,11 +776,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (document.fullscreenElement) {
                     fullscreenBtn.innerText = "Exit Fullscreen";
                     fullscreenBtn.classList.add('active');
-                    boardContainer.classList.add('is-fullscreen');
+                    gameLayout.classList.add('is-fullscreen');
                 } else {
                     fullscreenBtn.innerText = "Fullscreen Mode";
                     fullscreenBtn.classList.remove('active');
-                    boardContainer.classList.remove('is-fullscreen');
+                    gameLayout.classList.remove('is-fullscreen');
                 }
             });
         }
