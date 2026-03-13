@@ -584,7 +584,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // -- Multiplayer Logic --
     let peer = null;
     let conn = null;
-    let mySide = 'white'; // Default for host
+    let mySide = 'white';
     let isHostingLobby = false;
 
     function generateShortId() {
@@ -596,6 +596,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return result;
     }
 
+    function cleanupPeer() {
+        if (conn) {
+            conn.close();
+            conn = null;
+        }
+        if (peer) {
+            peer.destroy();
+            peer = null;
+        }
+    }
+
     function initMultiplayer(customId = null) {
         const status = document.getElementById('connection-status');
         const myIdDisplay = document.getElementById('my-peer-id');
@@ -605,17 +616,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const randomBtn = document.getElementById('random-btn');
         const loader = document.getElementById('searching-loader');
 
-        if (peer) {
-            peer.destroy();
-        }
+        cleanupPeer();
 
         status.innerText = "Initializing Peer...";
         const myId = customId || generateShortId();
-        peer = new Peer(myId);
+        
+        // Use a persistent connection to PeerJS server
+        peer = new Peer(myId, {
+            debug: 1
+        });
 
         peer.on('open', (id) => {
             myIdDisplay.innerText = id;
             status.innerText = isHostingLobby ? "Hosting Public Lobby..." : "Ready to Connect";
+            status.classList.remove('connected');
             
             // Auto-Join Link check
             if (!customId) {
@@ -628,12 +642,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         function connectToPeer(friendId) {
-            friendId = friendId.toUpperCase();
-            status.innerText = "Connecting to " + friendId + "...";
-            conn = peer.connect(friendId);
-            mySide = 'black'; 
+            friendId = friendId.trim().toUpperCase();
+            if (friendId === peer.id) return;
 
-            conn.on('open', () => {
+            status.innerText = "Connecting to " + friendId + "...";
+            loader.style.display = 'flex';
+
+            const newConn = peer.connect(friendId, {
+                reliable: true
+            });
+            
+            const timeout = setTimeout(() => {
+                if (!conn || !conn.open) {
+                    status.innerText = "Connection Timed Out";
+                    loader.style.display = 'none';
+                    if (isHostingLobby) {
+                        status.innerText = "Lobby hosting failed. Try again.";
+                        isHostingLobby = false;
+                    }
+                }
+            }, 5000);
+
+            newConn.on('open', () => {
+                clearTimeout(timeout);
+                conn = newConn;
+                mySide = 'black'; 
                 setupConnectionListeners();
                 status.innerText = "Connected as Black";
                 status.classList.add('connected');
@@ -641,7 +674,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 resetGame();
             });
 
-            conn.on('error', (err) => {
+            newConn.on('error', (err) => {
+                clearTimeout(timeout);
                 console.error("Conn Error:", err);
                 status.innerText = "Connection Failed";
                 loader.style.display = 'none';
@@ -676,34 +710,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 url: inviteLink
             };
 
-            if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-                navigator.share(shareData).catch(err => console.log('Share failed:', err));
-            } else {
-                navigator.clipboard.writeText(inviteLink).then(() => {
-                    const originalNode = copyBtn.cloneNode(true);
-                    copyBtn.innerText = "✅";
-                    setTimeout(() => { copyBtn.innerText = "🔗"; }, 2000);
-                });
+            // Enhanced Share Logic
+            try {
+                if (navigator.share && typeof navigator.share === 'function') {
+                    navigator.share(shareData).then(() => {
+                        console.log('Shared successfully');
+                    }).catch(err => {
+                        // Fallback on share failure (e.g. user cancelled)
+                        copyToClipboard(inviteLink);
+                    });
+                } else {
+                    copyToClipboard(inviteLink);
+                }
+            } catch (e) {
+                copyToClipboard(inviteLink);
             }
         };
 
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalContent = copyBtn.innerHTML;
+                copyBtn.innerText = "✅";
+                setTimeout(() => { copyBtn.innerHTML = originalContent; }, 2000);
+            }).catch(() => {
+                alert("Invite link copied to clipboard: " + text);
+            });
+        }
+
         randomBtn.onclick = () => {
+            if (isHostingLobby) {
+                status.innerText = "Already hosting lobby...";
+                return;
+            }
+
             loader.style.display = 'flex';
             status.innerText = "Searching for players...";
             
-            // Try matching with a pool of public IDs
+            // Lobby matching logic: Try REX_LOBBY_1
             const lobbyId = "REX_LOBBY_1"; 
             
-            // 1. Try to connect to the lobby
-            const quickConn = peer.connect(lobbyId);
+            // Connect to lobby
+            const searchPeer = peer.connect(lobbyId);
             let found = false;
 
-            quickConn.on('open', () => {
+            searchPeer.on('open', () => {
                 found = true;
-                conn = quickConn;
+                conn = searchPeer;
                 mySide = 'black';
                 setupConnectionListeners();
-                status.innerText = "Found a Match!";
+                status.innerText = "Match Found!";
                 status.classList.add('connected');
                 loader.style.display = 'none';
                 resetGame();
@@ -711,32 +766,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
             setTimeout(() => {
                 if (!found) {
-                    quickConn.close();
-                    status.innerText = "No players found. Starting lobby...";
+                    searchPeer.close();
+                    status.innerText = "Lobby empty. Becoming host...";
                     isHostingLobby = true;
                     initMultiplayer(lobbyId); // Become the lobby host
                 }
-            }, 3000);
+            }, 5000); // 5 second search window
         };
 
         peer.on('error', (err) => {
-            console.error("Peer Error:", err);
+            console.error("Peer Error:", err.type, err);
             if (err.type === 'peer-unavailable') {
-                status.innerText = "Peer not found.";
+                status.innerText = isHostingLobby ? "Lobby available (Hosting...)" : "Peer not found.";
             } else if (err.type === 'id-taken') {
-                // If the lobby is taken, try another or just generate random
                 if (isHostingLobby) {
+                    // Someone else is already hosting the lobby, so join them
                     isHostingLobby = false;
-                    initMultiplayer(); 
+                    initMultiplayer(); // Re-init as random ID
+                    setTimeout(() => connectToPeer(myId), 1000); // Connect to the lobby ID we tried to host
                 }
+            } else if (err.type === 'browser-incompatible') {
+                status.innerText = "Browser not supported for P2P";
             } else {
-                status.innerText = "Connection Error";
+                status.innerText = "Network Error";
             }
             loader.style.display = 'none';
         });
     }
 
     function setupConnectionListeners() {
+        if (!conn) return;
+
         conn.on('data', (data) => {
             if (data.type === 'move') {
                 executeMove(data.from.r, data.from.c, data.to.r, data.to.c, false, true);
@@ -746,8 +806,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         conn.on('close', () => {
-            document.getElementById('connection-status').innerText = "Friend Disconnected";
-            document.getElementById('connection-status').classList.remove('connected');
+            const status = document.getElementById('connection-status');
+            status.innerText = "Opponent Disconnected";
+            status.classList.remove('connected');
+            conn = null;
+            isHostingLobby = false;
+        });
+
+        conn.on('error', (err) => {
+            console.error("Connection error:", err);
             conn = null;
         });
     }
