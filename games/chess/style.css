@@ -211,11 +211,14 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.8rem 1rem;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 8px;
-    margin-bottom: 0.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 0.8rem 1.2rem; /* Wider padding */
+    background: rgba(139, 92, 246, 0.1); /* Primary color tint */
+    border-radius: 12px;
+    margin-bottom: 0.8rem;
+    border: 2px solid rgba(139, 92, 246, 0.2); /* Stronger border */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 5;
 }
 
 .player-info.opponent {

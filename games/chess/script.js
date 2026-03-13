@@ -111,16 +111,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // -- UI Rendering --
 
     function createBoardUI() {
+        if (!boardElement) return;
         boardElement.innerHTML = '';
-        const rows = (mode === 'online' && mySide === 'black') ? [0, 1, 2, 3, 4, 5, 6, 7] : [7, 6, 5, 4, 3, 2, 1, 0];
-        const cols = [0, 1, 2, 3, 4, 5, 6, 7];
         
-        // Perspective adjustment: White at bottom (row 7) by default. 
-        // If Black, we flip the row visual order.
-        const renderRows = (mode === 'online' && mySide === 'black') ? [0, 1, 2, 3, 4, 5, 6, 7] : [0, 1, 2, 3, 4, 5, 6, 7];
-        
-        // Wait, standard chess boards are 0-7 top-down. White is at 7 (bottom). 
-        // If Black, 0 should be at bottom.
+        // standard is 0-7 (top-down, 0 is rank 8, 7 is rank 1)
+        // Perspective: Black at bottom means 0 is at bottom, 7 is at top. 
         const isFlipped = (mode === 'online' && mySide === 'black');
 
         for (let i = 0; i < 8; i++) {
@@ -152,6 +147,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const uSide = document.getElementById('user-side');
         const oSide = document.getElementById('opponent-side');
         const oLabel = document.querySelector('#opponent-info .player-tag');
+
+        if (!uSide || !oSide) return; // Wait for DOM
 
         if (mode === 'online') {
             uSide.innerText = mySide.charAt(0).toUpperCase() + mySide.slice(1);
