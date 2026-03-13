@@ -722,24 +722,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (randomBtn) {
             randomBtn.onclick = () => {
+                if (!peer || !peer.open) return updateMultiplayerStatus("Multiplayer not ready", true);
                 if (loader) loader.style.display = 'flex';
-                updateMultiplayerStatus("Searching...");
-                const lobby = "REX_LOBBY_1";
-                const testConn = peer.connect(lobby);
-                let found = false;
+                updateMultiplayerStatus("Searching for match...");
+                
+                const lobbyId = "REX_LOBBY_1";
+                const testConn = peer.connect(lobbyId, { reliable: true });
+                let foundMatch = false;
+
+                const searchTimeout = setTimeout(() => {
+                    if (!foundMatch) {
+                        testConn.close();
+                        updateMultiplayerStatus("No match found. Starting lobby...");
+                        setTimeout(() => initMultiplayer(lobbyId), 500);
+                    }
+                }, 4000);
+
                 testConn.on('open', () => {
-                    found = true;
+                    foundMatch = true;
+                    clearTimeout(searchTimeout);
                     conn = testConn;
                     mySide = 'black';
                     setupConnection(testConn);
                 });
-                setTimeout(() => {
-                    if (!found) {
-                        testConn.close();
-                        updateMultiplayerStatus("Starting lobby...");
-                        initMultiplayer(lobby);
-                    }
-                }, 4000);
+
+                testConn.on('error', (err) => {
+                    console.log("Matchmaking probe error (expected if no lobby):", err);
+                    // Don't update status to Error here, as we are still searching
+                });
             };
         }
 
@@ -748,12 +758,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (fullscreenBtn && boardContainer) {
             fullscreenBtn.onclick = () => {
-                if (!document.fullscreenElement) {
-                    boardContainer.requestFullscreen().catch(err => {
-                        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
-                    });
-                } else {
-                    document.exitFullscreen();
+                try {
+                    if (!document.fullscreenElement) {
+                        boardContainer.requestFullscreen().catch(err => {
+                            console.error(`Fullscreen failed: ${err.message}`);
+                            alert("Fullscreen Mode not supported or blocked by browser.");
+                        });
+                    } else {
+                        document.exitFullscreen();
+                    }
+                } catch (e) {
+                    console.error("Fullscreen API Error:", e);
                 }
             };
 
@@ -761,9 +776,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (document.fullscreenElement) {
                     fullscreenBtn.innerText = "Exit Fullscreen";
                     fullscreenBtn.classList.add('active');
+                    boardContainer.classList.add('is-fullscreen');
                 } else {
                     fullscreenBtn.innerText = "Fullscreen Mode";
                     fullscreenBtn.classList.remove('active');
+                    boardContainer.classList.remove('is-fullscreen');
                 }
             });
         }
