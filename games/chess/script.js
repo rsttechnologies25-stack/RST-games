@@ -112,8 +112,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function createBoardUI() {
         boardElement.innerHTML = '';
-        for (let r = 0; r < 8; r++) {
-            for (let c = 0; c < 8; c++) {
+        const rows = (mode === 'online' && mySide === 'black') ? [0, 1, 2, 3, 4, 5, 6, 7] : [7, 6, 5, 4, 3, 2, 1, 0];
+        const cols = [0, 1, 2, 3, 4, 5, 6, 7];
+        
+        // Perspective adjustment: White at bottom (row 7) by default. 
+        // If Black, we flip the row visual order.
+        const renderRows = (mode === 'online' && mySide === 'black') ? [0, 1, 2, 3, 4, 5, 6, 7] : [0, 1, 2, 3, 4, 5, 6, 7];
+        
+        // Wait, standard chess boards are 0-7 top-down. White is at 7 (bottom). 
+        // If Black, 0 should be at bottom.
+        const isFlipped = (mode === 'online' && mySide === 'black');
+
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                const r = isFlipped ? 7 - i : i;
+                const c = isFlipped ? 7 - j : j;
+
                 const square = document.createElement('div');
                 square.className = `square ${(r + c) % 2 === 0 ? 'white-sq' : 'black-sq'}`;
                 square.dataset.row = r;
@@ -131,13 +145,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 boardElement.appendChild(square);
             }
         }
+        updatePlayerLabels();
+    }
+
+    function updatePlayerLabels() {
+        const uSide = document.getElementById('user-side');
+        const oSide = document.getElementById('opponent-side');
+        const oLabel = document.querySelector('#opponent-info .player-tag');
+
+        if (mode === 'online') {
+            uSide.innerText = mySide.charAt(0).toUpperCase() + mySide.slice(1);
+            uSide.className = `player-side ${mySide}`;
+            
+            const opponentSide = mySide === 'white' ? 'black' : 'white';
+            oSide.innerText = opponentSide.charAt(0).toUpperCase() + opponentSide.slice(1);
+            oSide.className = `player-side ${opponentSide}`;
+            oLabel.innerText = "Opponent (Online)";
+        } else {
+            uSide.innerText = "White";
+            uSide.className = "player-side white";
+            oSide.innerText = "Black";
+            oSide.className = "player-side black";
+            oLabel.innerText = mode === 'ai' ? "Computer (AI)" : "Friend (Local)";
+        }
     }
 
     function updateBoardUI() {
         const squares = boardElement.querySelectorAll('.square');
-        squares.forEach((sq, idx) => {
-            const r = Math.floor(idx / 8);
-            const c = idx % 8;
+        squares.forEach((sq) => {
+            const r = parseInt(sq.dataset.row);
+            const c = parseInt(sq.dataset.col);
             sq.innerHTML = '';
             sq.classList.remove('selected', 'valid-move', 'valid-capture', 'last-move');
             

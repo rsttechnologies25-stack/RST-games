@@ -177,33 +177,76 @@
 
 @media (max-width: 992px) {
     .game-layout {
-        flex-direction: column-reverse;
+        flex-direction: column;
+        align-items: center;
     }
     .game-sidebar {
         width: 100%;
-        min-width: unset;
+        max-width: 600px;
+        order: 2; /* Sidebar below board on small screens */
     }
     .board-container {
         width: 100%;
+        order: 1;
     }
 }
 
 @media (max-width: 600px) {
     .square {
-        font-size: 2rem;
+        font-size: 1.8rem;
     }
     .chess-board {
-        border-width: 2px;
+        border-width: 3px;
+    }
+    .game-sidebar {
+        padding: 1rem;
+    }
+    .stats-panel {
+        gap: 0.5rem;
     }
 }
 
 /* Multiplayer specific styles */
+.player-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.player-info.opponent {
+    margin-bottom: 1rem;
+}
+
+.player-info.you {
+    margin-top: 1rem;
+}
+
+.player-tag {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.player-side {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.player-side.white { background: #fff; color: #000; }
+.player-side.black { background: #333; color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+
 .multiplayer-panel {
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid var(--primary-glow);
     border-radius: 8px;
     padding: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     animation: fadeIn 0.3s ease;
 }
 

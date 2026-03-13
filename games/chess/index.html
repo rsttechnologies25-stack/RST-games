@@ -110,8 +110,22 @@
             </div>
 
             <div class="board-container">
-                <div id="chess-board" class="chess-board">
-                    <!-- Board populated by JS -->
+                <div style="width: 100%; max-width: 600px;">
+                    <!-- Opponent Info -->
+                    <div class="player-info opponent" id="opponent-info">
+                        <span class="player-tag">Opponent</span>
+                        <span class="player-side black" id="opponent-side">Black</span>
+                    </div>
+
+                    <div id="chess-board" class="chess-board">
+                        <!-- Board populated by JS -->
+                    </div>
+
+                    <!-- User Info -->
+                    <div class="player-info you" id="user-info">
+                        <span class="player-tag">You</span>
+                        <span class="player-side white" id="user-side">White</span>
+                    </div>
                 </div>
             </div>
         </div>
