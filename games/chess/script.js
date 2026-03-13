@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let moveHistory = [];
     let castlingRights = { w: { k: true, q: true }, b: { k: true, q: true } };
     let enPassantTarget = null; // {row, col} or null
+    let stateHistory = []; // Array of snapshots for undo
 
     // -- Initialization --
 
@@ -83,6 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         restartBtn.addEventListener('click', resetGame);
         playAgainBtn.addEventListener('click', resetGame);
+        
+        const undoBtn = document.getElementById('undo-btn');
+        if (undoBtn) undoBtn.addEventListener('click', () => undoMove());
     }
 
     function resetGame(isRemote = false) {
@@ -95,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
         moveHistory = [];
         castlingRights = { w: { k: true, q: true }, b: { k: true, q: true } };
         enPassantTarget = null;
+        stateHistory = [];
         
         moveHistoryElement.innerHTML = '';
         gameOverModal.classList.remove('active');
@@ -241,6 +246,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // -- Core Logic --
 
     function executeMove(fromR, fromC, toR, toC, isSimulation = false, isRemote = false) {
+        if (!isSimulation) saveState();
+        
         const piece = board[fromR][fromC];
         const targetPiece = board[toR][toC];
         
@@ -303,6 +310,60 @@ document.addEventListener('DOMContentLoaded', () => {
         if (gameActive && mode === 'ai' && turn === 'black') {
             setTimeout(makeAIMove, 500);
         }
+    }
+
+    function saveState() {
+        stateHistory.push({
+            board: JSON.parse(JSON.stringify(board)),
+            turn: turn,
+            lastMove: JSON.parse(JSON.stringify(lastMove)),
+            castlingRights: JSON.parse(JSON.stringify(castlingRights)),
+            enPassantTarget: JSON.parse(JSON.stringify(enPassantTarget)),
+            moveHistory: [...moveHistory]
+        });
+        if (stateHistory.length > 50) stateHistory.shift(); // Limit history
+    }
+
+    function undoMove(isRemote = false) {
+        if (!gameActive || stateHistory.length === 0) return;
+        if (mode === 'ai' && turn === 'black') return; // Can't undo while computer thinking
+        
+        // In AI mode, undo twice (user + computer move)
+        if (mode === 'ai' && stateHistory.length >= 2 && !isRemote) {
+            applyState(stateHistory.pop()); // Pop AI move
+            applyState(stateHistory.pop()); // Pop User move
+        } else {
+            applyState(stateHistory.pop());
+        }
+
+        // Sync Online Undo
+        if (mode === 'online' && !isRemote && conn) {
+            conn.send({ type: 'undo' });
+        }
+
+        selectedSquare = null;
+        validMoves = [];
+        updateBoardUI();
+        updateGameStatus();
+        updateMoveHistoryUI();
+    }
+
+    function applyState(state) {
+        board = state.board;
+        turn = state.turn;
+        lastMove = state.lastMove;
+        castlingRights = state.castlingRights;
+        enPassantTarget = state.enPassantTarget;
+        moveHistory = state.moveHistory;
+    }
+
+    function updateMoveHistoryUI() {
+        moveHistoryElement.innerHTML = '';
+        moveHistory.forEach((move, i) => {
+            const div = document.createElement('div');
+            div.innerText = `${Math.ceil((i + 1) / 2)}. ${move}`;
+            moveHistoryElement.prepend(div);
+        });
     }
 
     function updateCastlingRights(piece, r, c) {
@@ -680,6 +741,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         c.on('data', (data) => {
             if (data.type === 'move') executeMove(data.from.r, data.from.c, data.to.r, data.to.c, false, true);
+            else if (data.type === 'undo') undoMove(true);
             else if (data.type === 'reset') resetGame(true);
         });
 
