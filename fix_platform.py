@@ -12,7 +12,7 @@ HEADER_TEMPLATE = """
                 <div class="nav-actions">
                     <div class="nav-links">
                         <a href="{root_path}index.html">Home</a>
-                        <a href="{root_path}games.html">Games</a>
+                        <a href="{root_path}games/">Games</a>
                         <a href="#" id="showLeaderboard">Leaderboard</a>
                     </div>
                     <button class="theme-toggle" title="Toggle Theme" aria-label="Switch between light and dark mode">☀️</button>
@@ -35,7 +35,7 @@ FOOTER_TEMPLATE = """
                     <h4>Quick Links</h4>
                     <ul>
                         <li><a href="{root_path}index.html">Home</a></li>
-                        <li><a href="{root_path}games.html">All Games</a></li>
+                        <li><a href="{root_path}games/">All Games</a></li>
                         <li><a href="#" class="leaderboard-trigger">Leaderboard</a></li>
                         <li><a href="{root_path}legal/contact.html">Contact Us</a></li>
                     </ul>
@@ -43,9 +43,9 @@ FOOTER_TEMPLATE = """
                 <div class="footer-col">
                     <h4>Categories</h4>
                     <ul>
-                        <li><a href="{root_path}games.html?cat=reflex">Reflex Games</a></li>
-                        <li><a href="{root_path}games.html?cat=brain">Brain Training</a></li>
-                        <li><a href="{root_path}games.html?cat=skill">Skill Based</a></li>
+                        <li><a href="{root_path}games/?cat=reflex">Reflex Games</a></li>
+                        <li><a href="{root_path}games/?cat=brain">Brain Training</a></li>
+                        <li><a href="{root_path}games/?cat=skill">Skill Based</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
@@ -72,7 +72,7 @@ BREADCRUMBS_TEMPLATE = """
         <div class="breadcrumbs">
             <a href="{root_path}index.html">Home</a>
             <span>/</span>
-            <a href="{root_path}games.html">Games</a>
+            <a href="{root_path}games/">Games</a>
             <span>/</span>
             <span>{game_name}</span>
         </div>

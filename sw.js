@@ -2,7 +2,7 @@ const CACHE_NAME = 'rexon-games-v2';
 const ASSETS = [
   './',
   './index.html',
-  './games.html',
+  './games/',
   './css/style.css',
   './js/main.js',
   './manifest.json',
