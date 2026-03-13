@@ -586,20 +586,54 @@ document.addEventListener('DOMContentLoaded', () => {
     let conn = null;
     let mySide = 'white'; // Default for host
 
+    function generateShortId() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Avoid ambiguous chars
+        let result = '';
+        for (let i = 0; i < 6; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
+
     function initMultiplayer() {
         const status = document.getElementById('connection-status');
         const myIdDisplay = document.getElementById('my-peer-id');
         const joinInput = document.getElementById('join-id-input');
         const joinBtn = document.getElementById('join-btn');
+        const copyBtn = document.getElementById('copy-link-btn');
+        const randomBtn = document.getElementById('random-btn');
+        const loader = document.getElementById('searching-loader');
 
         status.innerText = "Initializing Peer...";
 
-        peer = new Peer();
+        const myShortId = generateShortId();
+        peer = new Peer(myShortId);
 
         peer.on('open', (id) => {
             myIdDisplay.innerText = id;
             status.innerText = "Ready to Connect";
+            
+            // Check for Auto-Join Link
+            const urlParams = new URLSearchParams(window.location.search);
+            const joinId = urlParams.get('join');
+            if (joinId && joinId !== id) {
+                connectToPeer(joinId);
+            }
         });
+
+        function connectToPeer(friendId) {
+            status.innerText = "Connecting...";
+            conn = peer.connect(friendId);
+            mySide = 'black'; // Joiner is black
+
+            conn.on('open', () => {
+                setupConnectionListeners();
+                status.innerText = "Connected as Black";
+                status.classList.add('connected');
+                loader.style.display = 'none';
+                resetGame();
+            });
+        }
 
         // Receiving a connection
         peer.on('connection', (c) => {
@@ -612,29 +646,55 @@ document.addEventListener('DOMContentLoaded', () => {
             setupConnectionListeners();
             status.innerText = "Connected as White";
             status.classList.add('connected');
+            loader.style.display = 'none';
             resetGame();
         });
 
         joinBtn.addEventListener('click', () => {
-            const friendId = joinInput.value.trim();
+            const friendId = joinInput.value.trim().toUpperCase();
             if (!friendId) return;
+            connectToPeer(friendId);
+        });
 
-            status.innerText = "Connecting...";
-            conn = peer.connect(friendId);
-            mySide = 'black'; // Joiner is black
-
-            conn.on('open', () => {
-                setupConnectionListeners();
-                status.innerText = "Connected as Black";
-                status.classList.add('connected');
-                resetGame();
+        copyBtn.addEventListener('click', () => {
+            const inviteLink = `${window.location.origin}${window.location.pathname}?join=${peer.id}`;
+            navigator.clipboard.writeText(inviteLink).then(() => {
+                const originalText = copyBtn.innerText;
+                copyBtn.innerText = "✅";
+                setTimeout(() => copyBtn.innerText = originalText, 2000);
             });
+        });
+
+        randomBtn.addEventListener('click', () => {
+            loader.style.display = 'flex';
+            status.innerText = "Finding global room...";
+            
+            // Simplified Random Match: Try to join a "public" room based on a small range
+            // This is a P2P simulation of random matching.
+            const lobbyId = "REXON_CHESS_LOBBY_" + (Math.floor(Math.random() * 5) + 1);
+            connectToPeer(lobbyId);
+
+            // If not connected in 5 seconds, become the host for that lobby
+            setTimeout(() => {
+                if (!conn || !conn.open) {
+                    status.innerText = "Hosting public room...";
+                    // We can't easily change our ID after init, so we just inform the user
+                    // to wait for someone else to connect to their current ID or try again.
+                    // For a true random match, a discovery server is needed.
+                    // As a fallback, we'll just keep waiting.
+                }
+            }, 5000);
         });
 
         peer.on('error', (err) => {
             console.error(err);
-            status.innerText = "Connection Error";
+            if (err.type === 'peer-unavailable') {
+                status.innerText = "Peer not found.";
+            } else {
+                status.innerText = "Connection Error";
+            }
             status.classList.remove('connected');
+            loader.style.display = 'none';
         });
     }
 

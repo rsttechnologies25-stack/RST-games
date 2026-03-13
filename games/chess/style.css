@@ -245,13 +245,77 @@
 .player-side.white { background: #fff; color: #000; }
 .player-side.black { background: #333; color: #fff; border: 1px solid rgba(255,255,255,0.2); }
 
+/* Multiplayer specific styles */
 .multiplayer-panel {
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid var(--primary-glow);
     border-radius: 8px;
-    padding: 1rem;
+    padding: 1.2rem;
     margin-bottom: 1.5rem;
     animation: fadeIn 0.3s ease;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    margin: 1rem 0;
+}
+
+.divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.divider:not(:empty)::before { margin-right: .5em; }
+.divider:not(:empty)::after { margin-left: .5em; }
+
+.btn-icon {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: var(--transition-speed);
+}
+
+.btn-icon:hover {
+    background: var(--primary-color);
+}
+
+.searching-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: var(--secondary-color);
+}
+
+.pulse-ring {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--secondary-color);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
 }
 
 .id-badge {

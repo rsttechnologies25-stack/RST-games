@@ -87,13 +87,27 @@
 
                 <!-- Online Multiplayer Panel -->
                 <div id="multiplayer-panel" class="multiplayer-panel" style="display: none;">
-                    <h4>Your ID: <span id="my-peer-id" class="id-badge">...</span></h4>
-                    <p class="small-text mb-1">Share this ID with a friend to play.</p>
+                    <div class="panel-header">
+                        <h4>Your ID: <span id="my-peer-id" class="id-badge">...</span></h4>
+                        <button class="btn-icon" id="copy-link-btn" title="Copy Invite Link">🔗</button>
+                    </div>
+                    
+                    <p class="small-text mb-1">Share ID or Link with a friend to play.</p>
+                    
                     <div class="join-box">
                         <input type="text" id="join-id-input" placeholder="Enter Friend's ID" class="id-input">
                         <button class="btn btn-primary btn-sm" id="join-btn">Connect</button>
                     </div>
+
+                    <div class="divider"><span>OR</span></div>
+                    
+                    <button class="btn btn-secondary btn-sm" id="random-btn" style="width: 100%;">Find Random Match</button>
+                    
                     <div id="connection-status" class="connection-status">Disconnected</div>
+                    <div id="searching-loader" class="searching-loader" style="display: none;">
+                        <div class="pulse-ring"></div>
+                        <span>Searching for players...</span>
+                    </div>
                 </div>
 
                 <div class="move-history-container">
