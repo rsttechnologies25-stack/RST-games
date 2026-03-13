@@ -585,239 +585,165 @@ document.addEventListener('DOMContentLoaded', () => {
     let peer = null;
     let conn = null;
     let mySide = 'white';
-    let isHostingLobby = false;
 
     function generateShortId() {
-        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; 
-        let result = '';
-        for (let i = 0; i < 6; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return result;
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let res = '';
+        for (let i = 0; i < 6; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
+        return res;
     }
 
-    function cleanupPeer() {
-        if (conn) {
-            conn.close();
-            conn = null;
+    function updateMultiplayerStatus(msg, isError = false) {
+        const status = document.getElementById('connection-status');
+        if (!status) return;
+        status.innerText = msg;
+        status.style.color = isError ? "var(--error-color)" : "var(--text-muted)";
+        if (msg.includes("Connected")) {
+            status.style.color = "var(--success-color)";
+            status.classList.add('connected');
+        } else {
+            status.classList.remove('connected');
         }
+    }
+
+    function initMultiplayer(targetId = null) {
+        const myIdDisplay = document.getElementById('my-peer-id');
+        const loader = document.getElementById('searching-loader');
+        
         if (peer) {
             peer.destroy();
             peer = null;
         }
-    }
 
-    function initMultiplayer(customId = null) {
-        const status = document.getElementById('connection-status');
-        const myIdDisplay = document.getElementById('my-peer-id');
-        const joinInput = document.getElementById('join-id-input');
-        const joinBtn = document.getElementById('join-btn');
-        const copyBtn = document.getElementById('copy-link-btn');
-        const randomBtn = document.getElementById('random-btn');
-        const loader = document.getElementById('searching-loader');
-
-        cleanupPeer();
-
-        status.innerText = "Initializing Peer...";
-        const myId = customId || generateShortId();
+        updateMultiplayerStatus("Connecting to server...");
+        const myId = targetId || generateShortId();
         
-        // Use a persistent connection to PeerJS server
-        peer = new Peer(myId, {
-            debug: 1
-        });
+        peer = new Peer(myId, { debug: 1 });
 
         peer.on('open', (id) => {
-            myIdDisplay.innerText = id;
-            status.innerText = isHostingLobby ? "Hosting Public Lobby..." : "Ready to Connect";
-            status.classList.remove('connected');
+            if (myIdDisplay) myIdDisplay.innerText = id;
+            updateMultiplayerStatus(targetId ? "Lobby Active - Waiting..." : "Ready to Connect");
             
-            // Auto-Join Link check
-            if (!customId) {
-                const urlParams = new URLSearchParams(window.location.search);
-                const joinId = urlParams.get('join');
-                if (joinId && joinId !== id) {
-                    connectToPeer(joinId);
-                }
+            if (!targetId) {
+                const joinId = new URLSearchParams(window.location.search).get('join');
+                if (joinId && joinId !== id) connectToPeer(joinId);
             }
         });
-
-        function connectToPeer(friendId) {
-            friendId = friendId.trim().toUpperCase();
-            if (friendId === peer.id) return;
-
-            status.innerText = "Connecting to " + friendId + "...";
-            loader.style.display = 'flex';
-
-            const newConn = peer.connect(friendId, {
-                reliable: true
-            });
-            
-            const timeout = setTimeout(() => {
-                if (!conn || !conn.open) {
-                    status.innerText = "Connection Timed Out";
-                    loader.style.display = 'none';
-                    if (isHostingLobby) {
-                        status.innerText = "Lobby hosting failed. Try again.";
-                        isHostingLobby = false;
-                    }
-                }
-            }, 5000);
-
-            newConn.on('open', () => {
-                clearTimeout(timeout);
-                conn = newConn;
-                mySide = 'black'; 
-                setupConnectionListeners();
-                status.innerText = "Connected as Black";
-                status.classList.add('connected');
-                loader.style.display = 'none';
-                resetGame();
-            });
-
-            newConn.on('error', (err) => {
-                clearTimeout(timeout);
-                console.error("Conn Error:", err);
-                status.innerText = "Connection Failed";
-                loader.style.display = 'none';
-            });
-        }
 
         peer.on('connection', (c) => {
-            if (conn) {
-                c.close();
-                return;
-            }
+            if (conn) return c.close();
             conn = c;
-            mySide = 'white'; 
-            setupConnectionListeners();
-            status.innerText = "Connected as White";
-            status.classList.add('connected');
-            loader.style.display = 'none';
-            resetGame();
+            mySide = 'white';
+            setupConnection(c);
         });
-
-        joinBtn.onclick = () => {
-            const friendId = joinInput.value.trim().toUpperCase();
-            if (!friendId) return;
-            connectToPeer(friendId);
-        };
-
-        copyBtn.onclick = () => {
-            const inviteLink = `${window.location.origin}${window.location.pathname}?join=${peer.id}`;
-            const shareData = {
-                title: 'Play Chess on RexonSoftTech',
-                text: `Challenge me to a game of Chess! My ID is ${peer.id}`,
-                url: inviteLink
-            };
-
-            // Enhanced Share Logic
-            try {
-                if (navigator.share && typeof navigator.share === 'function') {
-                    navigator.share(shareData).then(() => {
-                        console.log('Shared successfully');
-                    }).catch(err => {
-                        // Fallback on share failure (e.g. user cancelled)
-                        copyToClipboard(inviteLink);
-                    });
-                } else {
-                    copyToClipboard(inviteLink);
-                }
-            } catch (e) {
-                copyToClipboard(inviteLink);
-            }
-        };
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                const originalContent = copyBtn.innerHTML;
-                copyBtn.innerText = "✅";
-                setTimeout(() => { copyBtn.innerHTML = originalContent; }, 2000);
-            }).catch(() => {
-                alert("Invite link copied to clipboard: " + text);
-            });
-        }
-
-        randomBtn.onclick = () => {
-            if (isHostingLobby) {
-                status.innerText = "Already hosting lobby...";
-                return;
-            }
-
-            loader.style.display = 'flex';
-            status.innerText = "Searching for players...";
-            
-            // Lobby matching logic: Try REX_LOBBY_1
-            const lobbyId = "REX_LOBBY_1"; 
-            
-            // Connect to lobby
-            const searchPeer = peer.connect(lobbyId);
-            let found = false;
-
-            searchPeer.on('open', () => {
-                found = true;
-                conn = searchPeer;
-                mySide = 'black';
-                setupConnectionListeners();
-                status.innerText = "Match Found!";
-                status.classList.add('connected');
-                loader.style.display = 'none';
-                resetGame();
-            });
-
-            setTimeout(() => {
-                if (!found) {
-                    searchPeer.close();
-                    status.innerText = "Lobby empty. Becoming host...";
-                    isHostingLobby = true;
-                    initMultiplayer(lobbyId); // Become the lobby host
-                }
-            }, 5000); // 5 second search window
-        };
 
         peer.on('error', (err) => {
             console.error("Peer Error:", err.type, err);
-            if (err.type === 'peer-unavailable') {
-                status.innerText = isHostingLobby ? "Lobby available (Hosting...)" : "Peer not found.";
-            } else if (err.type === 'id-taken') {
-                if (isHostingLobby) {
-                    // Someone else is already hosting the lobby, so join them
-                    isHostingLobby = false;
-                    initMultiplayer(); // Re-init as random ID
-                    setTimeout(() => connectToPeer(myId), 1000); // Connect to the lobby ID we tried to host
-                }
-            } else if (err.type === 'browser-incompatible') {
-                status.innerText = "Browser not supported for P2P";
+            if (err.type === 'id-taken' && targetId) {
+                initMultiplayer();
+                setTimeout(() => connectToPeer(targetId), 1000);
             } else {
-                status.innerText = "Network Error";
+                updateMultiplayerStatus("Error (" + err.type + ")", true);
             }
-            loader.style.display = 'none';
+            if (loader) loader.style.display = 'none';
         });
     }
 
-    function setupConnectionListeners() {
-        if (!conn) return;
+    function connectToPeer(friendId) {
+        if (!peer || !peer.open) return updateMultiplayerStatus("Multiplayer not ready", true);
+        friendId = (friendId || "").trim().toUpperCase();
+        if (!friendId || friendId === peer.id) return;
 
-        conn.on('data', (data) => {
-            if (data.type === 'move') {
-                executeMove(data.from.r, data.from.c, data.to.r, data.to.c, false, true);
-            } else if (data.type === 'reset') {
-                resetGame(true);
+        updateMultiplayerStatus("Connecting to " + friendId + "...");
+        const activeConn = peer.connect(friendId, { reliable: true });
+        
+        const timeout = setTimeout(() => {
+            if (!activeConn.open) {
+                updateMultiplayerStatus("Peer offline or not found", true);
+                const loader = document.getElementById('searching-loader');
+                if (loader) loader.style.display = 'none';
             }
+        }, 8000);
+
+        activeConn.on('open', () => {
+            clearTimeout(timeout);
+            conn = activeConn;
+            mySide = 'black';
+            setupConnection(activeConn);
+        });
+    }
+
+    function setupConnection(c) {
+        updateMultiplayerStatus("Connected as " + (mySide === 'white' ? 'White' : 'Black'));
+        const loader = document.getElementById('searching-loader');
+        if (loader) loader.style.display = 'none';
+        
+        c.on('data', (data) => {
+            if (data.type === 'move') executeMove(data.from.r, data.from.c, data.to.r, data.to.c, false, true);
+            else if (data.type === 'reset') resetGame(true);
         });
 
-        conn.on('close', () => {
-            const status = document.getElementById('connection-status');
-            status.innerText = "Opponent Disconnected";
-            status.classList.remove('connected');
-            conn = null;
-            isHostingLobby = false;
-        });
-
-        conn.on('error', (err) => {
-            console.error("Connection error:", err);
+        c.on('close', () => {
+            updateMultiplayerStatus("Opponent disconnected", true);
             conn = null;
         });
     }
 
+    function setupMultiplayerUI() {
+        const joinBtn = document.getElementById('join-btn');
+        const copyBtn = document.getElementById('copy-link-btn');
+        const randomBtn = document.getElementById('random-btn');
+        const input = document.getElementById('join-id-input');
+        const loader = document.getElementById('searching-loader');
+
+        if (joinBtn) joinBtn.onclick = () => connectToPeer(input.value);
+        
+        if (copyBtn) {
+            copyBtn.onclick = () => {
+                if (!peer || !peer.id) return alert("Multiplayer not ready");
+                const url = `${window.location.origin}${window.location.pathname}?join=${peer.id}`;
+                if (navigator.share) {
+                    navigator.share({ title: 'Chess Challenge', text: 'Play Chess with me!', url: url })
+                        .catch(() => copyToClipboard(url));
+                } else {
+                    copyToClipboard(url);
+                }
+            };
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                copyBtn.innerText = "✅";
+                setTimeout(() => copyBtn.innerText = "🔗", 2000);
+            }).catch(() => {
+                alert("Invite Link: " + text);
+            });
+        }
+
+        if (randomBtn) {
+            randomBtn.onclick = () => {
+                if (loader) loader.style.display = 'flex';
+                updateMultiplayerStatus("Searching...");
+                const lobby = "REX_LOBBY_1";
+                const testConn = peer.connect(lobby);
+                let found = false;
+                testConn.on('open', () => {
+                    found = true;
+                    conn = testConn;
+                    mySide = 'black';
+                    setupConnection(testConn);
+                });
+                setTimeout(() => {
+                    if (!found) {
+                        testConn.close();
+                        updateMultiplayerStatus("Starting lobby...");
+                        initMultiplayer(lobby);
+                    }
+                }, 4000);
+            };
+        }
+    }
+
+    setupMultiplayerUI();
     initGame();
 });
