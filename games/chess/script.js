@@ -585,9 +585,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let peer = null;
     let conn = null;
     let mySide = 'white'; // Default for host
+    let isHostingLobby = false;
 
     function generateShortId() {
-        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Avoid ambiguous chars
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; 
         let result = '';
         for (let i = 0; i < 6; i++) {
             result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -595,7 +596,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return result;
     }
 
-    function initMultiplayer() {
+    function initMultiplayer(customId = null) {
         const status = document.getElementById('connection-status');
         const myIdDisplay = document.getElementById('my-peer-id');
         const joinInput = document.getElementById('join-id-input');
@@ -604,27 +605,33 @@ document.addEventListener('DOMContentLoaded', () => {
         const randomBtn = document.getElementById('random-btn');
         const loader = document.getElementById('searching-loader');
 
-        status.innerText = "Initializing Peer...";
+        if (peer) {
+            peer.destroy();
+        }
 
-        const myShortId = generateShortId();
-        peer = new Peer(myShortId);
+        status.innerText = "Initializing Peer...";
+        const myId = customId || generateShortId();
+        peer = new Peer(myId);
 
         peer.on('open', (id) => {
             myIdDisplay.innerText = id;
-            status.innerText = "Ready to Connect";
+            status.innerText = isHostingLobby ? "Hosting Public Lobby..." : "Ready to Connect";
             
-            // Check for Auto-Join Link
-            const urlParams = new URLSearchParams(window.location.search);
-            const joinId = urlParams.get('join');
-            if (joinId && joinId !== id) {
-                connectToPeer(joinId);
+            // Auto-Join Link check
+            if (!customId) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const joinId = urlParams.get('join');
+                if (joinId && joinId !== id) {
+                    connectToPeer(joinId);
+                }
             }
         });
 
         function connectToPeer(friendId) {
-            status.innerText = "Connecting...";
+            friendId = friendId.toUpperCase();
+            status.innerText = "Connecting to " + friendId + "...";
             conn = peer.connect(friendId);
-            mySide = 'black'; // Joiner is black
+            mySide = 'black'; 
 
             conn.on('open', () => {
                 setupConnectionListeners();
@@ -633,16 +640,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 loader.style.display = 'none';
                 resetGame();
             });
+
+            conn.on('error', (err) => {
+                console.error("Conn Error:", err);
+                status.innerText = "Connection Failed";
+                loader.style.display = 'none';
+            });
         }
 
-        // Receiving a connection
         peer.on('connection', (c) => {
             if (conn) {
                 c.close();
                 return;
             }
             conn = c;
-            mySide = 'white'; // Host is white
+            mySide = 'white'; 
             setupConnectionListeners();
             status.innerText = "Connected as White";
             status.classList.add('connected');
@@ -650,50 +662,76 @@ document.addEventListener('DOMContentLoaded', () => {
             resetGame();
         });
 
-        joinBtn.addEventListener('click', () => {
+        joinBtn.onclick = () => {
             const friendId = joinInput.value.trim().toUpperCase();
             if (!friendId) return;
             connectToPeer(friendId);
-        });
+        };
 
-        copyBtn.addEventListener('click', () => {
+        copyBtn.onclick = () => {
             const inviteLink = `${window.location.origin}${window.location.pathname}?join=${peer.id}`;
-            navigator.clipboard.writeText(inviteLink).then(() => {
-                const originalText = copyBtn.innerText;
-                copyBtn.innerText = "✅";
-                setTimeout(() => copyBtn.innerText = originalText, 2000);
-            });
-        });
+            const shareData = {
+                title: 'Play Chess on RexonSoftTech',
+                text: `Challenge me to a game of Chess! My ID is ${peer.id}`,
+                url: inviteLink
+            };
 
-        randomBtn.addEventListener('click', () => {
+            if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                navigator.share(shareData).catch(err => console.log('Share failed:', err));
+            } else {
+                navigator.clipboard.writeText(inviteLink).then(() => {
+                    const originalNode = copyBtn.cloneNode(true);
+                    copyBtn.innerText = "✅";
+                    setTimeout(() => { copyBtn.innerText = "🔗"; }, 2000);
+                });
+            }
+        };
+
+        randomBtn.onclick = () => {
             loader.style.display = 'flex';
-            status.innerText = "Finding global room...";
+            status.innerText = "Searching for players...";
             
-            // Simplified Random Match: Try to join a "public" room based on a small range
-            // This is a P2P simulation of random matching.
-            const lobbyId = "REXON_CHESS_LOBBY_" + (Math.floor(Math.random() * 5) + 1);
-            connectToPeer(lobbyId);
+            // Try matching with a pool of public IDs
+            const lobbyId = "REX_LOBBY_1"; 
+            
+            // 1. Try to connect to the lobby
+            const quickConn = peer.connect(lobbyId);
+            let found = false;
 
-            // If not connected in 5 seconds, become the host for that lobby
+            quickConn.on('open', () => {
+                found = true;
+                conn = quickConn;
+                mySide = 'black';
+                setupConnectionListeners();
+                status.innerText = "Found a Match!";
+                status.classList.add('connected');
+                loader.style.display = 'none';
+                resetGame();
+            });
+
             setTimeout(() => {
-                if (!conn || !conn.open) {
-                    status.innerText = "Hosting public room...";
-                    // We can't easily change our ID after init, so we just inform the user
-                    // to wait for someone else to connect to their current ID or try again.
-                    // For a true random match, a discovery server is needed.
-                    // As a fallback, we'll just keep waiting.
+                if (!found) {
+                    quickConn.close();
+                    status.innerText = "No players found. Starting lobby...";
+                    isHostingLobby = true;
+                    initMultiplayer(lobbyId); // Become the lobby host
                 }
-            }, 5000);
-        });
+            }, 3000);
+        };
 
         peer.on('error', (err) => {
-            console.error(err);
+            console.error("Peer Error:", err);
             if (err.type === 'peer-unavailable') {
                 status.innerText = "Peer not found.";
+            } else if (err.type === 'id-taken') {
+                // If the lobby is taken, try another or just generate random
+                if (isHostingLobby) {
+                    isHostingLobby = false;
+                    initMultiplayer(); 
+                }
             } else {
                 status.innerText = "Connection Error";
             }
-            status.classList.remove('connected');
             loader.style.display = 'none';
         });
     }
