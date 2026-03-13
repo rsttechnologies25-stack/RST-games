@@ -17,14 +17,25 @@
 .chess-board {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
-    width: 100%;
+    width: 90vw;
+    height: 90vw;
     max-width: 600px;
-    aspect-ratio: 1;
-    border: 8px solid #2c241e; /* Dark wood border */
+    max-height: 600px;
+    border: 8px solid #2c241e;
     border-radius: 8px;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
     cursor: default;
     overflow: hidden;
+}
+
+/* Ensure board fits vertically on medium screens */
+@media (min-height: 600px) and (min-width: 993px) {
+    .chess-board {
+        width: 80vh;
+        height: 80vh;
+        max-width: 600px;
+        max-height: 600px;
+    }
 }
 
 .square {
@@ -369,6 +380,31 @@
 .btn-sm {
     padding: 0.4rem 0.8rem;
     font-size: 0.8rem;
+}
+/* Fullscreen Styles */
+.board-container:fullscreen {
+    background: #0f172a;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+.board-container:fullscreen .chess-board {
+    width: 85vh;
+    height: 85vh;
+    max-width: 90vw;
+    max-height: 90vw;
+}
+
+.board-container:fullscreen .player-info {
+    width: 100%;
+    max-width: 85vh;
+}
+
+#fullscreen-btn.active {
+    background: var(--success-color);
 }
 
 @keyframes fadeIn {

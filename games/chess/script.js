@@ -742,6 +742,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 4000);
             };
         }
+
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const boardContainer = document.querySelector('.board-container');
+
+        if (fullscreenBtn && boardContainer) {
+            fullscreenBtn.onclick = () => {
+                if (!document.fullscreenElement) {
+                    boardContainer.requestFullscreen().catch(err => {
+                        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+                    });
+                } else {
+                    document.exitFullscreen();
+                }
+            };
+
+            document.addEventListener('fullscreenchange', () => {
+                if (document.fullscreenElement) {
+                    fullscreenBtn.innerText = "Exit Fullscreen";
+                    fullscreenBtn.classList.add('active');
+                } else {
+                    fullscreenBtn.innerText = "Fullscreen Mode";
+                    fullscreenBtn.classList.remove('active');
+                }
+            });
+        }
     }
 
     setupMultiplayerUI();
