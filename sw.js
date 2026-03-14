@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rexon-games-v1.6';
+const CACHE_NAME = 'rexon-games-v1.7';
 const ASSETS = [
     './',
     './index.html',
@@ -51,22 +51,29 @@ self.addEventListener('activate', event => {
 
 // Fetch Event - Stale-While-Revalidate
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      const fetchPromise = fetch(event.request).then(networkResponse => {
-        if (networkResponse && networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then(cache => {
-                cache.put(event.request, networkResponse.clone());
+    let request = event.request;
+    const url = new URL(request.url);
+
+    // If request is for a directory, try matching with index.html
+    if (url.pathname.endsWith('/')) {
+        request = new Request(url.pathname + 'index.html');
+    }
+
+    event.respondWith(
+        caches.match(request).then(cachedResponse => {
+            const fetchPromise = fetch(event.request).then(networkResponse => {
+                if (networkResponse && networkResponse.status === 200) {
+                    caches.open(CACHE_NAME).then(cache => {
+                        cache.put(event.request, networkResponse.clone());
+                    });
+                }
+                return networkResponse;
+            }).catch(() => {
+                if (event.request.mode === 'navigate') {
+                    return caches.match('./404.html');
+                }
             });
-        }
-        return networkResponse;
-      }).catch(() => {
-          // If both fail, and it's a page request, return 404.html
-          if (event.request.mode === 'navigate') {
-              return caches.match('./404.html');
-          }
-      });
-      return cachedResponse || fetchPromise;
-    })
-  );
+            return cachedResponse || fetchPromise;
+        })
+    );
 });
