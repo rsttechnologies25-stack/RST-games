@@ -1,0 +1,113 @@
+.game-container-v2 {
+    max-width: 600px;
+    margin: 0 auto;
+    background: var(--surface-color);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.player-hud {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.player-card {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    border: 2px solid transparent;
+    transition: var(--transition-speed);
+    opacity: 0.5;
+}
+
+.player-card.active {
+    opacity: 1;
+    background: rgba(139, 92, 246, 0.1);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+    transform: translateY(-5px);
+}
+
+.player-card .marker {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.3rem;
+}
+
+.player-card .name {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+#player1-card .marker { color: #60A5FA; } /* Blue X */
+#player2-card .marker { color: #F87171; } /* Red O */
+#player3-card .marker { color: #34D399; } /* Green Square */
+
+.ttt-board {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    margin-bottom: 2rem;
+    aspect-ratio: 1/1;
+}
+
+.ttt-square {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s;
+    user-select: none;
+}
+
+.ttt-square:hover:not(.filled) {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.ttt-square.filled {
+    cursor: default;
+}
+
+.ttt-square[data-marker="X"] { color: #60A5FA; text-shadow: 0 0 10px rgba(96, 165, 250, 0.5); }
+.ttt-square[data-marker="O"] { color: #F87171; text-shadow: 0 0 10px rgba(248, 113, 113, 0.5); }
+.ttt-square[data-marker="▢"] { color: #34D399; text-shadow: 0 0 10px rgba(52, 211, 153, 0.5); }
+
+.ttt-square.winner {
+    background: rgba(255, 255, 255, 0.2);
+    animation: pulse-win 1s infinite alternate;
+}
+
+@keyframes pulse-win {
+    from { transform: scale(1); box-shadow: 0 0 0px transparent; }
+    to { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
+}
+
+.game-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.status-msg {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+@media (max-width: 600px) {
+    .game-container-v2 { padding: 1rem; }
+    .ttt-square { font-size: 1.5rem; }
+    .player-card { padding: 0.5rem; }
+    .player-card .marker { font-size: 1.2rem; }
+}

@@ -11,7 +11,7 @@ HEADER_TEMPLATE = """
                 </a>
                 <div class="nav-actions">
                     <div class="nav-links">
-                        <a href="{root_path}index.html">Home</a>
+                        <a href="{root_path}">Home</a>
                         <a href="{root_path}games/index.html">Games</a>
                         <a href="#" id="showLeaderboard">Leaderboard</a>
                     </div>
@@ -34,7 +34,7 @@ FOOTER_TEMPLATE = """
                 <div class="footer-col">
                     <h4>Quick Links</h4>
                     <ul>
-                        <li><a href="{root_path}index.html">Home</a></li>
+                        <li><a href="{root_path}">Home</a></li>
                         <li><a href="{root_path}games/index.html">All Games</a></li>
                         <li><a href="#" class="leaderboard-trigger">Leaderboard</a></li>
                         <li><a href="{root_path}legal/contact.html">Contact Us</a></li>
@@ -70,7 +70,7 @@ FOOTER_TEMPLATE = """
 
 BREADCRUMBS_TEMPLATE = """
         <div class="breadcrumbs">
-            <a href="{root_path}index.html">Home</a>
+            <a href="{root_path}">Home</a>
             <span>/</span>
             <a href="{root_path}games/index.html">Games</a>
             <span>/</span>

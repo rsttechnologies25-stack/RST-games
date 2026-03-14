@@ -29,6 +29,8 @@
     
     
     
+    
+    
     <header>
         <div class="container">
             <nav>
@@ -38,7 +40,7 @@
                 </a>
                 <div class="nav-actions">
                     <div class="nav-links">
-                        <a href="../../index.html">Home</a>
+                        <a href="../../">Home</a>
                         <a href="../../games/index.html">Games</a>
                         <a href="#" id="showLeaderboard">Leaderboard</a>
                     </div>
@@ -51,11 +53,15 @@
 
 
 
+
+
     <main class="container">
         
         
+        
+        
         <div class="breadcrumbs">
-            <a href="../../index.html">Home</a>
+            <a href="../../">Home</a>
             <span>/</span>
             <a href="../../games/index.html">Games</a>
             <span>/</span>
@@ -64,92 +70,113 @@
 
 
 
+
+
         <div class="text-center mb-1">
             <h1 style="font-size: 2rem; margin-bottom: 0.2rem;">Chess</h1>
             <p style="font-size: 0.9rem; margin: 0;">Master the board in this classic strategy game.</p>
         </div>
 
-        <div class="game-layout">
-            <div class="game-sidebar">
-                <div class="stats-panel">
-                    <div class="stat-box">
-                        <h4>Turn</h4>
-                        <span id="turn-display">White</span>
+        <div class="game-container">
+            <!-- Left Side: Board and Player Info -->
+            <div class="board-pane">
+                <!-- Opponent Info -->
+                <div class="player-profile opponent" id="opponent-info">
+                    <div class="avatar">🤖</div>
+                    <div class="profile-details">
+                        <div class="player-name-row">
+                            <span class="player-name" id="opponent-name">Computer (AI)</span>
+                            <span class="player-rating">(1200)</span>
+                        </div>
+                        <div class="captured-pieces" id="opponent-captured">
+                            <!-- Captured white pieces go here -->
+                        </div>
                     </div>
-                    <div class="stat-box">
-                        <h4>Status</h4>
-                        <span id="game-status">Live</span>
-                    </div>
+                    <div class="timer" id="opponent-timer">10:00</div>
                 </div>
 
-                <div class="mode-selector">
-                    <button class="mode-btn active" data-mode="ai">Vs Computer</button>
-                    <button class="mode-btn" data-mode="pvp">Local PvP</button>
-                    <button class="mode-btn" data-mode="online">Online PvP</button>
+                <div id="chess-board" class="chess-board">
+                    <!-- Board populated by JS -->
                 </div>
 
-                <div class="difficulty-options" id="difficulty-selector">
-                    <button class="mode-btn" data-difficulty="easy">Easy</button>
-                    <button class="mode-btn active" data-difficulty="medium">Medium</button>
+                <!-- User Info -->
+                <div class="player-profile you" id="user-info">
+                    <div class="avatar">👤</div>
+                    <div class="profile-details">
+                        <div class="player-name-row">
+                            <span class="player-name" id="user-name">You</span>
+                            <span class="player-rating">(1200)</span>
+                        </div>
+                        <div class="captured-pieces" id="user-captured">
+                            <!-- Captured black pieces go here -->
+                        </div>
+                    </div>
+                    <div class="timer" id="user-timer">10:00</div>
                 </div>
-
-                <!-- Online Multiplayer Panel -->
-                <div id="multiplayer-panel" class="multiplayer-panel" style="display: none;">
-                    <div class="panel-header">
-                        <h4>Your ID: <span id="my-peer-id" class="id-badge">...</span></h4>
-                        <button class="btn-icon" id="copy-link-btn" title="Copy Invite Link">🔗</button>
-                    </div>
-                    
-                    <p class="small-text mb-1">Share ID or Link with a friend to play.</p>
-                    
-                    <div class="join-box">
-                        <input type="text" id="join-id-input" placeholder="Enter Friend's ID" class="id-input">
-                        <button class="btn btn-primary btn-sm" id="join-btn">Connect</button>
-                    </div>
-
-                    <div class="divider"><span>OR</span></div>
-                    
-                    <button class="btn btn-secondary btn-sm" id="random-btn" style="width: 100%;">Find Random Match</button>
-                    
-                    <div id="connection-status" class="connection-status">Disconnected</div>
-                    <div id="searching-loader" class="searching-loader" style="display: none;">
-                        <div class="pulse-ring"></div>
-                        <span>Searching for players...</span>
-                    </div>
-                </div>
-
-                <div class="move-history-container">
-                    <h4>Move History</h4>
-                    <div id="move-history" class="move-history">
-                        <!-- Moves will be appended here -->
-                    </div>
-                </div>
-
-                <button class="btn btn-primary" id="restart-btn" style="width: 100%; margin-top: 1rem;">Reset Board</button>
-                <button class="btn btn-secondary" id="undo-btn" style="width: 100%; margin-top: 0.5rem;">Undo Move</button>
-                <button class="btn btn-secondary" id="fullscreen-btn" style="width: 100%; margin-top: 0.5rem;">Fullscreen Mode</button>
-                <button class="btn btn-whatsapp" id="share-btn" style="width: 100%; margin-top: 0.5rem; display: none;">
-                    <span>Share Result</span>
-                </button>
             </div>
 
-            <div class="board-container">
-                <div style="width: 100%; max-width: 600px;">
-                    <!-- Opponent Info -->
-                    <div class="player-info opponent" id="opponent-info">
-                        <span class="player-tag">Opponent</span>
-                        <span class="player-side black" id="opponent-side">Black</span>
+            <!-- Right Side: Sidebar Info and Controls -->
+            <div class="sidebar-pane">
+                <div class="sidebar-top">
+                    <div class="mode-selector-v2">
+                        <button class="mode-btn-v2 active" data-mode="ai">Vs Computer</button>
+                        <button class="mode-btn-v2" data-mode="pvp">Local PvP</button>
+                        <button class="mode-btn-v2" data-mode="online">Online</button>
                     </div>
 
-                    <div id="chess-board" class="chess-board">
-                        <!-- Board populated by JS -->
+                    <div class="difficulty-options-v2" id="difficulty-selector">
+                        <button class="diff-btn active" data-difficulty="easy">Easy</button>
+                        <button class="diff-btn" data-difficulty="medium">Medium</button>
+                        <button class="diff-btn" data-difficulty="hard">Hard</button>
                     </div>
+                </div>
 
-                    <!-- User Info -->
-                    <div class="player-info you" id="user-info">
-                        <span class="player-tag">You</span>
-                        <span class="player-side white" id="user-side">White</span>
+                <div class="move-history-pane">
+                    <div class="history-header">
+                        <span class="turn-indicator" id="turn-display">White's Turn</span>
+                        <span class="game-status-badge" id="game-status">Live</span>
                     </div>
+                    <div id="move-history" class="move-history-v2">
+                        <!-- Moves in algebraic notation -->
+                    </div>
+                </div>
+
+                <!-- Online Multiplayer Panel (Hidden by default) -->
+                <div id="multiplayer-panel" class="multiplayer-panel-v2" style="display: none;">
+                    <div class="panel-row">
+                        <span>ID: <strong id="my-peer-id">...</strong></span>
+                        <button class="btn-icon-v2" id="copy-link-btn" title="Copy Invite">🔗</button>
+                    </div>
+                    <div class="join-row">
+                        <input type="text" id="join-id-input" placeholder="Join ID" class="id-input-v2">
+                        <button class="btn-v2 btn-primary" id="join-btn">Join</button>
+                    </div>
+                    <button class="btn-v2 btn-secondary" id="random-btn" style="width: 100%;">Find Match</button>
+                    <div id="connection-status" class="status-text">Disconnected</div>
+                </div>
+
+                <div class="sidebar-bottom">
+                    <div class="control-grid">
+                        <button class="control-btn" id="restart-btn" title="New Game">
+                            <span class="icon">🔄</span>
+                            <span class="label">New Game</span>
+                        </button>
+                        <button class="control-btn" id="undo-btn" title="Undo Move">
+                            <span class="icon">↩️</span>
+                            <span class="label">Undo</span>
+                        </button>
+                        <button class="control-btn" id="hint-btn" title="Get Hint">
+                            <span class="icon">💡</span>
+                            <span class="label">Hint</span>
+                        </button>
+                        <button class="control-btn" id="fullscreen-btn" title="Full Screen">
+                            <span class="icon">📷</span>
+                            <span class="label">Full Screen</span>
+                        </button>
+                    </div>
+                    <button class="btn-whatsapp" id="share-btn" style="width: 100%; margin-top: 1rem; display: none;">
+                        Share Result
+                    </button>
                 </div>
             </div>
         </div>
@@ -175,6 +202,8 @@
     
     
     
+    
+    
     <footer>
         <div class="container">
             <div class="footer-grid">
@@ -185,7 +214,7 @@
                 <div class="footer-col">
                     <h4>Quick Links</h4>
                     <ul>
-                        <li><a href="../../index.html">Home</a></li>
+                        <li><a href="../../">Home</a></li>
                         <li><a href="../../games/index.html">All Games</a></li>
                         <li><a href="#" class="leaderboard-trigger">Leaderboard</a></li>
                         <li><a href="../../legal/contact.html">Contact Us</a></li>
@@ -217,6 +246,8 @@
             </div>
         </div>
     </footer>
+
+
 
 
 

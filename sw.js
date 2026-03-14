@@ -1,12 +1,32 @@
-const CACHE_NAME = 'rexon-games-v2';
+const CACHE_NAME = 'rexon-games-v1.6';
 const ASSETS = [
-  './',
-  './index.html',
-  './games/',
-  './css/style.css',
-  './js/main.js',
-  './manifest.json',
-  './404.html'
+    './',
+    './index.html',
+    './games/',
+    './games/index.html',
+    './css/style.css',
+    './js/main.js',
+    './manifest.json',
+    './games/speed-click/index.html',
+    './games/typing-test/index.html',
+    './games/reaction/index.html',
+    './games/tictactoe/index.html',
+    './games/3-player-ttt/index.html',
+    './games/3-player-ttt/style.css',
+    './games/3-player-ttt/script.js',
+    './games/memory/index.html',
+    './games/number-memory/index.html',
+    './games/sequence-recall/index.html',
+    './games/quick-math/index.html',
+    './games/2048/index.html',
+    './games/block-puzzle/index.html',
+    './games/aim-trainer/index.html',
+    './games/dont-tap-red/index.html',
+    './games/odd-one-out/index.html',
+    './games/pattern-match/index.html',
+    './games/chess/index.html',
+    './games/chess/style.css',
+    './games/chess/script.js'
 ];
 
 // Install Event

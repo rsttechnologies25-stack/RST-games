@@ -14,15 +14,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const gameOverModal = document.getElementById('gameOverModal');
     const winnerText = document.getElementById('winner-text');
     const gameSummary = document.getElementById('game-summary');
-    const modeBtns = document.querySelectorAll('.mode-btn[data-mode]');
-    const difficultyBtns = document.querySelectorAll('.mode-btn[data-difficulty]');
+    const modeBtns = document.querySelectorAll('.mode-btn-v2[data-mode]');
+    const difficultyBtns = document.querySelectorAll('.diff-btn[data-difficulty]');
     const difficultySelector = document.getElementById('difficulty-selector');
     const multiPanel = document.getElementById('multiplayer-panel');
+    const undoBtn = document.getElementById('undo-btn');
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    const hintBtn = document.getElementById('hint-btn');
 
     // Game Constants
     const PIECES = {
-        wP: '♙', wR: '♖', wN: '♘', wB: '♗', wQ: '♕', wK: '♔',
-        bP: '♟', bR: '♜', bN: '♞', bB: '♝', bQ: '♛', bK: '♚'
+        wP: '<svg viewBox="0 0 45 45"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 18.59 16 21c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-2.41-1.33-4.5-3.28-5.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z" fill="#fff" stroke="#000" stroke-width="1.5"/></svg>',
+        wR: '<svg viewBox="0 0 45 45"><g fill="#fff" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 39h27v-3H9v3zM12 36v-4h21v4H12zM11 14V9h4v2h5V9h5v2h5V9h4v5" /><path d="M34 14l-3 3H14l-3-3" /><path d="M31 17v12.5H14V17" /><path d="M31 29.5l1.5 2.5h-20l1.5-2.5" /><path d="M11 14h23" fill="none" stroke-linejoin="miter" /></g></svg>',
+        wN: '<svg viewBox="0 0 45 45"><g fill="none" fill-rule="evenodd" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10c10.5 1 16.5 8 16 29H15c0-9 10-6.5 8-21" fill="#fff" /><path d="M24 18c.3 1.2 2 1.9 1.2 4-1.2 3.4-6.4 5.7-10.4 2.8C10.5 22 15 11 22 10z" fill="#fff" /><path d="M9.5 25.5A.5.5 0 1 1 9 25a.5.5 0 0 1 .5.5z" fill="#000" /><path d="M15 15.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z" fill="#000" /><path d="M28 27c1.5 1.5 3 1 3.5 1s.5 1 1 0 .5-1.5-1-2h-3.5" /></g></svg>',
+        wB: '<svg viewBox="0 0 45 45"><g fill="none" fill-rule="evenodd" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="#fff" stroke-linecap="butt"><path d="M9 36c3.39-.97 10.11.43 13.5-2 3.39 2.43 10.11 1.03 13.5 2 0 0 0 4.46-13.5 4.5h-13.5c0-.04 0-4.5 0-4.5z" /><path d="M15 32c2.5 2.5 12.5 2.5 15 0 .5-1.5 0-2 0-2 0-2.5-2.5-4-2.5-4 5.5-1.5 6-11.5-5-15.5-11 4-10.5 14-5 15.5 0 0-2.5 1.5-2.5 4 0 0-.5.5 0 2z" /><path d="M25 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" /></g><path d="M17.5 26h10M15 30h15m-7.5-14.5v5M20 18h5" stroke-linejoin="miter" /></g></svg>',
+        wQ: '<svg viewBox="0 0 45 45"><g fill="white" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM24.5 7.5a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM41 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM11 20a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM38 20a2 2 0 1 1-4 0 2 2 0 0 1 4 0z" /><path d="M9 26c8.5-1.5 21-1.5 27 0l2-12-7 11V11l-5.5 13.5-3-15-3 15-5.5-13.5V25L7 14l2 12z" /><path d="M9 26c0 2 1.5 2 2.5 4 2.5 3 2.5 3.5 3 6.5h21c.5-3 .5-3.5 3-6.5 1-2 2.5-2 2.5-4-6-1.5-18.5-1.5-27 0z" /><path d="M11.5 30c3.5-1 18.5-1 22 0M12 33.5c6-1 15-1 21 0" fill="none" /></g></svg>',
+        wK: '<svg viewBox="0 0 45 45"><g fill="none" fill-rule="evenodd" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 11.63V6M20 8h5" stroke-linejoin="miter" /><path d="M22.5 25s4.5-7.5 3-10c-1.5-2.5-6-2.5-6 0-1.5 2.5 3 10 3 10z" fill="#fff" stroke-linecap="butt" stroke-linejoin="miter" /><path d="M11.5 37c5.5 3.5 15.5 3.5 21 0v-7s9-4.5 6-10.5c-4-1-1-1.5-4-7.5-3-6-9-6-12 0-3 6 0 6.5-4 7.5-3 6 0 9.5 6 10.5v7z" fill="#fff" /><path d="M11.5 30c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0" /></g></svg>',
+        bP: '<svg viewBox="0 0 45 45"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 18.59 16 21c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-2.41-1.33-4.5-3.28-5.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z" fill="#000" stroke="#fff" stroke-width="1.5"/></svg>',
+        bR: '<svg viewBox="0 0 45 45"><g fill="#000" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 39h27v-3H9v3zM12 36v-4h21v4H12zM11 14V9h4v2h5V9h5v2h5V9h4v5" /><path d="M34 14l-3 3H14l-3-3" /><path d="M31 17v12.5H14V17" /><path d="M31 29.5l1.5 2.5h-20l1.5-2.5" /><path d="M11 14h23" fill="none" stroke-linejoin="miter" /></g></svg>',
+        bN: '<svg viewBox="0 0 45 45"><g fill="none" fill-rule="evenodd" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10c10.5 1 16.5 8 16 29H15c0-9 10-6.5 8-21" fill="#000" /><path d="M24 18c.3 1.2 2 1.9 1.2 4-1.2 3.4-6.4 5.7-10.4 2.8C10.5 22 15 11 22 10z" fill="#000" /><path d="M9.5 25.5A.5.5 0 1 1 9 25a.5.5 0 0 1 .5.5z" fill="#fff" /><path d="M15 15.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z" fill="#fff" /><path d="M28 27c1.5 1.5 3 1 3.5 1s.5 1 1 0 .5-1.5-1-2h-3.5" /></g></svg>',
+        bB: '<svg viewBox="0 0 45 45"><g fill="none" fill-rule="evenodd" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g fill="#000" stroke-linecap="butt"><path d="M9 36c3.39-.97 10.11.43 13.5-2 3.39 2.43 10.11 1.03 13.5 2 0 0 0 4.46-13.5 4.5h-13.5c0-.04 0-4.5 0-4.5z" /><path d="M15 32c2.5 2.5 12.5 2.5 15 0 .5-1.5 0-2 0-2 0-2.5-2.5-4-2.5-4 5.5-1.5 6-11.5-5-15.5-11 4-10.5 14-5 15.5 0 0-2.5 1.5-2.5 4 0 0-.5.5 0 2z" /><path d="M25 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" /></g><path d="M17.5 26h10M15 30h15m-7.5-14.5v5M20 18h5" stroke-linejoin="miter" /></g></svg>',
+        bQ: '<svg viewBox="0 0 45 45"><g fill="black" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM24.5 7.5a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM41 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM11 20a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM38 20a2 2 0 1 1-4 0 2 2 0 0 1 4 0z" /><path d="M9 26c8.5-1.5 21-1.5 27 0l2-12-7 11V11l-5.5 13.5-3-15-3 15-5.5-13.5V25L7 14l2 12z" /><path d="M9 26c0 2 1.5 2 2.5 4 2.5 3 2.5 3.5 3 6.5h21c.5-3 .5-3.5 3-6.5 1-2 2.5-2 2.5-4-6-1.5-18.5-1.5-27 0z" /><path d="M11.5 30c3.5-1 18.5-1 22 0M12 33.5c6-1 15-1 21 0" fill="none" /></g></svg>',
+        bK: '<svg viewBox="0 0 45 45"><g fill="none" fill-rule="evenodd" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 11.63V6M20 8h5" stroke-linejoin="miter" /><path d="M22.5 25s4.5-7.5 3-10c-1.5-2.5-6-2.5-6 0-1.5 2.5 3 10 3 10z" fill="#000" stroke-linecap="butt" stroke-linejoin="miter" /><path d="M11.5 37c5.5 3.5 15.5 3.5 21 0v-7s9-4.5 6-10.5c-4-1-1-1.5-4-7.5-3-6-9-6-12 0-3 6 0 6.5-4 7.5-3 6 0 9.5 6 10.5v7z" fill="#000" /><path d="M11.5 30c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0" /></g></svg>'
     };
 
     // Initial Board State
@@ -45,8 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let validMoves = []; // array of {row, col}
     let gameActive = true;
     let mode = 'ai'; // 'ai' or 'pvp'
-    let difficulty = 'medium'; // 'easy', 'medium'
+    let difficulty = 'easy'; // 'easy', 'medium', 'hard'
     let moveHistory = [];
+    let capturedPieces = { white: [], black: [] };
     let castlingRights = { w: { k: true, q: true }, b: { k: true, q: true } };
     let enPassantTarget = null; // {row, col} or null
     let stateHistory = []; // Array of snapshots for undo
@@ -97,6 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         validMoves = [];
         gameActive = true;
         moveHistory = [];
+        capturedPieces = { white: [], black: [] };
         castlingRights = { w: { k: true, q: true }, b: { k: true, q: true } };
         enPassantTarget = null;
         stateHistory = [];
@@ -111,6 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         createBoardUI();
         updateGameStatus();
+        updateCapturedPiecesUI();
     }
 
     // -- UI Rendering --
@@ -278,6 +294,12 @@ document.addEventListener('DOMContentLoaded', () => {
             board[toR][toC] = piece[0] + 'Q';
         }
 
+        // Captured Piece Tracking
+        if (targetPiece) {
+            const side = targetPiece[0] === 'w' ? 'white' : 'black';
+            capturedPieces[side].push(targetPiece);
+        }
+
         // Update Castling Rights
         updateCastlingRights(piece, fromR, fromC);
 
@@ -287,7 +309,9 @@ document.addEventListener('DOMContentLoaded', () => {
         lastMove = { from: { r: fromR, c: fromC }, to: { r: toR, c: toC } };
         selectedSquare = null;
         validMoves = [];
-        const moveLabel = `${piece[1]}${String.fromCharCode(97 + toC)}${8 - toR}`;
+        
+        // Algebraic Notation Logic
+        const moveLabel = getAlgebraicNotation(piece, fromR, fromC, toR, toC, targetPiece);
         addMoveToHistory(moveLabel);
         
         // Sync Online Move
@@ -302,6 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
         turn = (turn === 'white' ? 'black' : 'white');
         updateBoardUI();
         updateGameStatus();
+        updateCapturedPiecesUI();
 
         // Check End Conditions
         checkEndConditions();
@@ -355,14 +380,61 @@ document.addEventListener('DOMContentLoaded', () => {
         castlingRights = state.castlingRights;
         enPassantTarget = state.enPassantTarget;
         moveHistory = state.moveHistory;
+        capturedPieces = JSON.parse(JSON.stringify(state.capturedPieces || { white: [], black: [] }));
     }
 
     function updateMoveHistoryUI() {
         moveHistoryElement.innerHTML = '';
-        moveHistory.forEach((move, i) => {
-            const div = document.createElement('div');
-            div.innerText = `${Math.ceil((i + 1) / 2)}. ${move}`;
-            moveHistoryElement.prepend(div);
+        for (let i = 0; i < moveHistory.length; i++) {
+            const entry = document.createElement('div');
+            entry.className = 'move-entry';
+            const moveNum = Math.floor(i / 2) + 1;
+            const prefix = i % 2 === 0 ? `${moveNum}. ` : '';
+            entry.innerText = prefix + moveHistory[i];
+            moveHistoryElement.appendChild(entry);
+        }
+        moveHistoryElement.scrollTop = moveHistoryElement.scrollHeight;
+    }
+
+    function getAlgebraicNotation(piece, fromR, fromC, toR, toC, captured) {
+        // Special case: Castling
+        if (piece[1] === 'K' && Math.abs(toC - fromC) === 2) {
+            return toC > fromC ? 'O-O' : 'O-O-O';
+        }
+        
+        const type = piece[1] === 'P' ? '' : piece[1];
+        const captureChar = captured ? (piece[1] === 'P' ? String.fromCharCode(97 + fromC) + 'x' : 'x') : '';
+        const targetSq = String.fromCharCode(97 + toC) + (8 - toR);
+        
+        return type + captureChar + targetSq;
+    }
+
+    function updateCapturedPiecesUI() {
+        const whiteCaptured = document.getElementById('opponent-captured'); // Opponent (Black) holds White pieces if they captured them? 
+        // Logic check: Opponent (usually top) should show pieces captured FROM them? 
+        // Actually Chess.com shows pieces captured BY the player next to their profile.
+        const userCapturedContainer = document.getElementById('user-captured');
+        const opponentCapturedContainer = document.getElementById('opponent-captured');
+        
+        if (!userCapturedContainer || !opponentCapturedContainer) return;
+
+        userCapturedContainer.innerHTML = '';
+        opponentCapturedContainer.innerHTML = '';
+
+        // Pieces captured BY White (User) are Black pieces
+        capturedPieces.black.forEach(p => {
+            const img = document.createElement('div');
+            img.className = 'captured-piece-img';
+            img.innerHTML = PIECES[p];
+            userCapturedContainer.appendChild(img);
+        });
+
+        // Pieces captured BY Black (Opponent) are White pieces
+        capturedPieces.white.forEach(p => {
+            const img = document.createElement('div');
+            img.className = 'captured-piece-img';
+            img.innerHTML = PIECES[p];
+            opponentCapturedContainer.appendChild(img);
         });
     }
 
@@ -384,9 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function addMoveToHistory(move) {
         moveHistory.push(move);
-        const div = document.createElement('div');
-        div.innerText = `${Math.ceil(moveHistory.length / 2)}. ${move}`;
-        moveHistoryElement.prepend(div);
+        updateMoveHistoryUI();
     }
 
     function updateGameStatus() {
@@ -816,13 +886,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const fullscreenBtn = document.getElementById('fullscreen-btn');
-        const gameLayout = document.querySelector('.game-layout');
+        const gameContainer = document.querySelector('.game-container');
 
-        if (fullscreenBtn && gameLayout) {
+        if (fullscreenBtn && gameContainer) {
             fullscreenBtn.onclick = () => {
                 try {
                     if (!document.fullscreenElement) {
-                        gameLayout.requestFullscreen().catch(err => {
+                        gameContainer.requestFullscreen().catch(err => {
                             console.error(`Fullscreen failed: ${err.message}`);
                             alert("Fullscreen Mode not supported or blocked by browser.");
                         });
@@ -836,13 +906,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             document.addEventListener('fullscreenchange', () => {
                 if (document.fullscreenElement) {
-                    fullscreenBtn.innerText = "Exit Fullscreen";
+                    fullscreenBtn.querySelector('.label').innerText = "Exit";
                     fullscreenBtn.classList.add('active');
-                    gameLayout.classList.add('is-fullscreen');
                 } else {
-                    fullscreenBtn.innerText = "Fullscreen Mode";
+                    fullscreenBtn.querySelector('.label').innerText = "Full Screen";
                     fullscreenBtn.classList.remove('active');
-                    gameLayout.classList.remove('is-fullscreen');
                 }
             });
         }
