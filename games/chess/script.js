@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (pieceCode) {
                     const piece = document.createElement('div');
                     piece.className = `piece ${pieceCode[0] === 'w' ? 'white' : 'black'}`;
-                    piece.innerText = PIECES[pieceCode];
+                    piece.innerHTML = PIECES[pieceCode];
                     square.appendChild(piece);
                 }
                 
@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (pieceCode) {
                 const piece = document.createElement('div');
                 piece.className = `piece ${pieceCode[0] === 'w' ? 'white' : 'black'}`;
-                piece.innerText = PIECES[pieceCode];
+                piece.innerHTML = PIECES[pieceCode];
                 sq.appendChild(piece);
             }
 

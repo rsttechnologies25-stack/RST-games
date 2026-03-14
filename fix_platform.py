@@ -5,14 +5,14 @@ HEADER_TEMPLATE = """
     <header>
         <div class="container">
             <nav>
-                <a href="{root_path}index.html" class="logo" aria-label="RexonSoftTech Home">
+                <a href="{root_path}" class="logo" aria-label="RexonSoftTech Home">
                     <h3 style="margin:0; font-size: 1.8rem; color: var(--primary-color);">Rexon<span
                             style="color: var(--text-color);">SoftTech</span></h3>
                 </a>
                 <div class="nav-actions">
                     <div class="nav-links">
                         <a href="{root_path}">Home</a>
-                        <a href="{root_path}games/index.html">Games</a>
+                        <a href="{root_path}games/">Games</a>
                         <a href="#" id="showLeaderboard">Leaderboard</a>
                     </div>
                     <button class="theme-toggle" title="Toggle Theme" aria-label="Switch between light and dark mode">☀️</button>
@@ -35,7 +35,7 @@ FOOTER_TEMPLATE = """
                     <h4>Quick Links</h4>
                     <ul>
                         <li><a href="{root_path}">Home</a></li>
-                        <li><a href="{root_path}games/index.html">All Games</a></li>
+                        <li><a href="{root_path}games/">All Games</a></li>
                         <li><a href="#" class="leaderboard-trigger">Leaderboard</a></li>
                         <li><a href="{root_path}legal/contact.html">Contact Us</a></li>
                     </ul>
@@ -43,9 +43,9 @@ FOOTER_TEMPLATE = """
                 <div class="footer-col">
                     <h4>Categories</h4>
                     <ul>
-                        <li><a href="{root_path}games/index.html?cat=reflex">Reflex Games</a></li>
-                        <li><a href="{root_path}games/index.html?cat=brain">Brain Training</a></li>
-                        <li><a href="{root_path}games/index.html?cat=skill">Skill Based</a></li>
+                        <li><a href="{root_path}games/?cat=reflex">Reflex Games</a></li>
+                        <li><a href="{root_path}games/?cat=brain">Brain Training</a></li>
+                        <li><a href="{root_path}games/?cat=skill">Skill Based</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
@@ -72,7 +72,7 @@ BREADCRUMBS_TEMPLATE = """
         <div class="breadcrumbs">
             <a href="{root_path}">Home</a>
             <span>/</span>
-            <a href="{root_path}games/index.html">Games</a>
+            <a href="{root_path}games/">Games</a>
             <span>/</span>
             <span>{game_name}</span>
         </div>
@@ -106,17 +106,22 @@ def process_file(file_path):
 
     # 3. Add Breadcrumbs to game pages
     if 'games/' in file_path and 'index.html' in file_path:
-        game_name_match = re.search(r'<h1>(.*?)</h1>', content)
-        game_name = game_name_match.group(1) if game_name_match else "Game"
-        breadcrumbs_html = BREADCRUMBS_TEMPLATE.format(root_path=root_path, game_name=game_name)
-        
-        if '<div class="breadcrumbs">' not in content:
-            # Place after header and before main content
-            content = content.replace('</header>', '</header>\n    <main class="container">\n' + breadcrumbs_html)
-            # Remove redundant main container if it was already there (careful!)
-            # Just let it be for now or refine regex
+        # Don't add nested breadcrumbs to games index itself
+        if file_path == './games/index.html':
+            pass
         else:
-            content = re.sub(r'<div class="breadcrumbs">.*?</div>', breadcrumbs_html, content, flags=re.DOTALL)
+            game_name_match = re.search(r'<h1>(.*?)</h1>', content)
+            game_name = game_name_match.group(1) if game_name_match else "Game"
+            breadcrumbs_html = BREADCRUMBS_TEMPLATE.format(root_path=root_path, game_name=game_name)
+            
+            if '<div class="breadcrumbs">' not in content:
+                # Place before main content
+                if '<main' in content:
+                    content = content.replace('<main', breadcrumbs_html + '\n    <main', 1)
+                else:
+                    content = content.replace('</header>', '</header>\n' + breadcrumbs_html, 1)
+            else:
+                content = re.sub(r'<div class="breadcrumbs">.*?</div>', breadcrumbs_html, content, flags=re.DOTALL)
 
     # 4. Global Leaderboard Trigger Fix
     # Ensure all links with class .leaderboard-trigger or id showLeaderboard work
