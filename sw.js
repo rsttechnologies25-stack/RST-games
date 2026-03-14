@@ -1,7 +1,8 @@
-const CACHE_NAME = 'rexon-games-v1.7';
+const CACHE_NAME = 'rexon-games-v1.8';
 const ASSETS = [
     './',
     './index.html',
+    './404.html',
     './games/',
     './games/index.html',
     './css/style.css',
